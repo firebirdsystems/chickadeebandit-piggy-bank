@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piggy Bank</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           var(--hub-bg, #f9fafb);
+      --card:         var(--hub-surface, #ffffff);
+      --border:       var(--hub-border, #e5e7eb);
+      --border-mid:   var(--hub-border, #d1d5db);
+      --text:         var(--hub-text, #111827);
+      --muted:        var(--hub-text-muted, #6b7280);
+      --accent:       var(--hub-primary, #111827);
+      --accent-fg:    var(--hub-primary-fg, #ffffff);
+      --accent-hover: var(--hub-primary-hover, #374151);
+      --accent-light: #f3f4f6;
+      --gold: #d97706;  --gold-light: #fef3c7;
+      --blue: #2563eb;  --blue-light: #dbeafe;
+      --green: #16a34a; --green-light: #dcfce7;
+      --red: #dc2626;   --red-light: #fee2e2;
+      --radius:       var(--hub-radius, 0.5rem);
+      --shadow:       0 1px 3px rgba(0,0,0,.07);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; font-size: 15px; line-height: 1.5;
+    }
+    .app { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding: 14px 18px;
+      background: var(--accent); border-radius: var(--radius); color: white;
+    }
+    header h1 { font-size: 1.2rem; font-weight: 700; }
+    header .sub { font-size: 0.8rem; opacity: .75; margin-top: 1px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s;
+    }
+    .btn:disabled { opacity: .5; cursor: default; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover:not(:disabled) { opacity: .88; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-danger:hover:not(:disabled) { opacity: .88; }
+    .btn-icon { background: rgba(255,255,255,.2); color: white; border: none; font-size: 1.1rem; padding: 6px 10px; border-radius: 8px; }
+    .btn-icon:hover { background: rgba(255,255,255,.3); }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+    .btn-gold { background: var(--gold); color: white; }
+    .btn-blue { background: var(--blue); color: white; }
+
+    /* ── Member overview grid ────────────────────────────── */
+    .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .member-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 16px; cursor: pointer;
+      box-shadow: var(--shadow); transition: border-color .15s, box-shadow .15s;
+    }
+    .member-card:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(124,58,237,.1); }
+    .member-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .member-card .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: white; flex-shrink: 0; }
+    .member-card .name { font-weight: 700; font-size: 1rem; }
+    .member-card .role { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .bank-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .bank-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; }
+    .bank-pill.money       { background: var(--gold-light);  color: var(--gold); }
+    .bank-pill.screen_time { background: var(--blue-light);  color: var(--blue); }
+    .bank-pill.empty       { background: var(--border); color: var(--muted); font-weight: 500; }
+    .member-card .hint { font-size: 0.72rem; color: var(--muted); margin-top: 8px; }
+
+    /* ── Member detail ───────────────────────────────────── */
+    .back-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .back-bar h2 { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .back-bar .avatar-sm { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: white; }
+
+    /* ── Bank card ───────────────────────────────────────── */
+    .bank-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; box-shadow: var(--shadow); overflow: hidden; }
+    .bank-card-header { padding: 16px 18px 12px; }
+    .bank-type-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 4px; }
+    .bank-balance { font-size: 2.2rem; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-bottom: 4px; }
+    .bank-balance.money       { color: var(--gold); }
+    .bank-balance.screen_time { color: var(--blue); }
+    .bank-admin-actions { display: flex; gap: 8px; padding: 0 18px 14px; }
+
+    /* ── Transactions ────────────────────────────────────── */
+    .tx-list { border-top: 1px solid var(--border); }
+    .tx-row { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border); }
+    .tx-row:last-child { border-bottom: none; }
+    .tx-amount { font-size: 0.95rem; font-weight: 700; min-width: 60px; text-align: right; flex-shrink: 0; }
+    .tx-amount.positive { color: var(--green); }
+    .tx-amount.negative { color: var(--red); }
+    .tx-detail { flex: 1; min-width: 0; }
+    .tx-note { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tx-note.muted { color: var(--muted); font-style: italic; }
+    .tx-meta { font-size: 0.72rem; color: var(--muted); }
+    .tx-source { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+    .tx-source.chores { background: var(--green-light); color: var(--green); }
+    .tx-source.manual { background: var(--border); color: var(--muted); }
+
+    /* ── Create bank row ─────────────────────────────────── */
+    .create-bank-row {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      padding: 16px; text-align: center; margin-bottom: 16px;
+      color: var(--muted); font-size: 0.9rem;
+    }
+    .create-bank-row button { margin-top: 10px; }
+
+    /* ── Modal ───────────────────────────────────────────── */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
+    @media (min-width: 480px) { .modal-backdrop { align-items: center; padding: 20px; } }
+    .modal { background: white; border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 480px; padding: 22px; max-height: 90vh; overflow-y: auto; }
+    @media (min-width: 480px) { .modal { border-radius: var(--radius); } }
+    .modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
+      font-size: 0.95rem; outline: none; transition: border-color .15s; background: white; font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .input-prefix { position: relative; }
+    .input-prefix .prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; pointer-events: none; }
+    .input-prefix input { padding-left: 24px; }
+    .amount-hint { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+    .modal-actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+    .modal-actions .btn { flex: 1; justify-content: center; min-width: 90px; }
+
+    .type-selector { display: flex; gap: 10px; }
+    .type-opt { flex: 1; padding: 12px; border-radius: 8px; border: 1.5px solid var(--border); cursor: pointer; text-align: center; transition: all .12s; }
+    .type-opt:hover { border-color: var(--accent); }
+    .type-opt.selected { border-color: var(--accent); background: var(--accent-light); }
+    .type-opt .type-icon { font-size: 1.5rem; margin-bottom: 4px; }
+    .type-opt .type-label { font-size: 0.82rem; font-weight: 600; }
+
+    .empty { text-align: center; padding: 36px 16px; color: var(--muted); font-size: 0.9rem; }
+    .loading { text-align: center; padding: 40px; color: var(--muted); }
+    .processing-badge { font-size: 0.75rem; color: var(--accent); background: var(--accent-light); border-radius: 4px; padding: 2px 8px; margin-left: 8px; }
+    .section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+  </style>
+  <base href="/run/piggy-bank/" />
+</head>
+<body>
+<div class="app">
+  <div id="root"><div class="loading">Loading…</div></div>
+</div>
+
+<script type="module">
+import { memberColor, initial, esc, isAdult } from "/hub-sdk.js";
+
+const CONTEXT    = window.__CONTEXT_URL ?? "";
+const DB         = window.__DB_URL      ?? "";
+const EVENTS_URL = window.__EVENTS_URL  ?? "/api/events";
+const ME         = window.__CURRENT_MEMBER ?? null;
+
+let members          = [];
+let banks            = [];       // piggy banks relevant to current user
+let transactions     = {};       // bankId → last 10 rows
+let viewMemberId     = null;     // admin: which member detail is open
+let processingEvents = false;
+
+// ─── DB ───────────────────────────────────────────────────────────────────
+async function db(sql, params = []) {
+  if (!DB) return { rows: [] };
+  const res = await fetch(DB, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sql, params }) });
+  return res.json();
+}
+
+async function initDb() {
+  await db(`CREATE TABLE IF NOT EXISTS piggy_banks (
+    id TEXT PRIMARY KEY, member_id TEXT NOT NULL, name TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'money', balance INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  )`);
+  await db(`CREATE TABLE IF NOT EXISTS transactions (
+    id TEXT PRIMARY KEY, bank_id TEXT NOT NULL, member_id TEXT NOT NULL,
+    actor_id TEXT NOT NULL, amount INTEGER NOT NULL,
+    note TEXT NOT NULL DEFAULT '', source TEXT NOT NULL DEFAULT 'manual',
+    created_at TEXT NOT NULL
+  )`);
+  await db(`CREATE TABLE IF NOT EXISTS processed_events (
+    event_id TEXT PRIMARY KEY, processed_at TEXT NOT NULL
+  )`);
+}
+
+// ─── Load ─────────────────────────────────────────────────────────────────
+async function loadMembers() {
+  if (!CONTEXT) {
+    members = [
+      { id: "demo-1", name: "Alex",   role: "adult" },
+      { id: "demo-2", name: "Jordan", role: "child" },
+      { id: "demo-3", name: "Casey",  role: "child" },
+    ];
+    return;
+  }
+  try { const res = await fetch(`${CONTEXT}?keys=family.members`); members = ((await res.json())["family.members"]) ?? []; }
+  catch { members = []; }
+}
+
+async function loadBanks() {
+  if (!ME) return;
+  if (isAdult(ME)) {
+    const { rows } = await db(`SELECT * FROM piggy_banks ORDER BY member_id, type`);
+    banks = rows ?? [];
+  } else {
+    const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? ORDER BY type`, [ME.id]);
+    banks = rows ?? [];
+  }
+}
+
+async function loadTransactionsForBank(bankId) {
+  const { rows } = await db(`SELECT * FROM transactions WHERE bank_id = ? ORDER BY created_at DESC LIMIT 10`, [bankId]);
+  transactions[bankId] = rows ?? [];
+}
+
+async function loadAllTransactions() {
+  for (const bank of banks) await loadTransactionsForBank(bank.id);
+}
+
+// ─── Format helpers ───────────────────────────────────────────────────────
+function fmtMoney(cents) {
+  const neg = cents < 0;
+  return `${neg ? "-" : ""}$${(Math.abs(cents) / 100).toFixed(2)}`;
+}
+function fmtTime(minutes) {
+  const m = Math.abs(minutes);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60), rem = m % 60;
+  return rem > 0 ? `${h}h ${rem}m` : `${h}h`;
+}
+function fmtBalance(bank) {
+  return bank.type === "money" ? fmtMoney(bank.balance) : fmtTime(bank.balance);
+}
+function fmtAmount(amount, type) {
+  const s = type === "money" ? fmtMoney(Math.abs(amount)) : fmtTime(Math.abs(amount));
+  return (amount >= 0 ? "+" : "−") + s;
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function mc(id) { return memberColor(id, members); }
+
+// ─── Allowance event processing ───────────────────────────────────────────
+async function processAllowanceEvents() {
+  if (processingEvents) return;
+  processingEvents = true;
+  try {
+    const res = await fetch(`${EVENTS_URL}?type=allowance.weekly`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const events = Array.isArray(data) ? data : (data.events ?? []);
+    for (const ev of events) await processOneEvent(ev);
+  } catch {} finally { processingEvents = false; }
+}
+
+async function processOneEvent(ev) {
+  const { rows: seen } = await db(`SELECT 1 FROM processed_events WHERE event_id = ?`, [ev.id]);
+  if (seen.length) return;
+
+  const p = ev.payload ?? {};
+  if (!p.member_id) return;
+
+  const now = new Date().toISOString();
+  const note = `Chores — week ${p.week ?? ""}`.trim();
+
+  // Deposit money
+  if ((p.cents_earned ?? 0) > 0 && p.reward_type !== "screen_time") {
+    const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? AND type = 'money'`, [p.member_id]);
+    if (rows.length) {
+      const bank = rows[0];
+      const txId = crypto.randomUUID();
+      await db(`INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, 'chores', ?, ?, 'chores', ?)`,
+        [txId, bank.id, p.member_id, p.cents_earned, note, now]);
+      await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [p.cents_earned, bank.id]);
+    }
+  }
+
+  // Deposit screen time
+  if ((p.minutes_earned ?? 0) > 0 && p.reward_type !== "money") {
+    const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? AND type = 'screen_time'`, [p.member_id]);
+    if (rows.length) {
+      const bank = rows[0];
+      const txId = crypto.randomUUID();
+      await db(`INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, 'chores', ?, ?, 'chores', ?)`,
+        [txId, bank.id, p.member_id, p.minutes_earned, note, now]);
+      await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [p.minutes_earned, bank.id]);
+    }
+  }
+
+  await db(`INSERT OR IGNORE INTO processed_events (event_id, processed_at) VALUES (?, ?)`, [ev.id, now]);
+}
+
+// ─── Admin actions ────────────────────────────────────────────────────────
+async function createBank(memberId, type) {
+  const name = type === "money" ? "Money" : "Screen Time";
+  const id   = crypto.randomUUID();
+  const now  = new Date().toISOString();
+  await db(`INSERT INTO piggy_banks (id, member_id, name, type, balance, created_at) VALUES (?, ?, ?, ?, 0, ?)`, [id, memberId, name, type, now]);
+  await loadBanks();
+  await loadAllTransactions();
+  render();
+}
+
+async function deleteBank(bankId) {
+  if (!confirm("Delete this bank and all its transaction history?")) return;
+  await db(`DELETE FROM transactions WHERE bank_id = ?`, [bankId]);
+  await db(`DELETE FROM piggy_banks WHERE id = ?`, [bankId]);
+  delete transactions[bankId];
+  await loadBanks();
+  render();
+}
+
+async function recordTransaction(bankId, amount, note, source = "manual") {
+  const bank = banks.find(b => b.id === bankId);
+  if (!bank || !ME) return;
+  const id  = crypto.randomUUID();
+  const now = new Date().toISOString();
+  await db(`INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, bankId, bank.member_id, ME.id, amount, note, source, now]);
+  await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [amount, bankId]);
+  // Update local state
+  const updated = banks.find(b => b.id === bankId);
+  if (updated) updated.balance += amount;
+  await loadTransactionsForBank(bankId);
+  closeModal();
+  render();
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────
+let modalEl = null;
+function openModal(html) {
+  closeModal();
+  modalEl = document.createElement("div");
+  modalEl.className = "modal-backdrop";
+  modalEl.innerHTML = `<div class="modal">${html}</div>`;
+  modalEl.addEventListener("click", e => { if (e.target === modalEl) closeModal(); });
+  document.body.appendChild(modalEl);
+}
+function closeModal() { modalEl?.remove(); modalEl = null; }
+
+function openTransactionModal(bank, isDeposit) {
+  const member  = members.find(m => m.id === bank.member_id);
+  const isMoney = bank.type === "money";
+  const label   = isDeposit ? "Add" : "Subtract";
+  const unit    = isMoney ? "dollars" : "minutes";
+
+  openModal(`
+    <h3>${isDeposit ? "➕" : "➖"} ${label} ${isMoney ? "Money" : "Screen Time"}</h3>
+    <div style="font-size:.88rem;color:var(--muted);margin-bottom:16px">
+      For <strong>${esc(member?.name ?? "?")}</strong> · Current balance: <strong>${fmtBalance(bank)}</strong>
+    </div>
+    <div class="form-group">
+      <label>Amount (${unit})</label>
+      <div class="input-prefix">
+        ${isMoney ? `<span class="prefix">$</span>` : ""}
+        <input id="tx-amount" type="number" min="0" step="${isMoney ? "0.01" : "1"}" placeholder="${isMoney ? "0.00" : "30"}" autofocus />
+      </div>
+      ${!isMoney ? `<div class="amount-hint">Enter minutes (e.g. 30 = 30 min, 90 = 1h 30m)</div>` : ""}
+    </div>
+    <div class="form-group">
+      <label>Note <span style="font-weight:400;text-transform:none;color:var(--muted)">(optional)</span></label>
+      <input id="tx-note" type="text" placeholder="${isDeposit ? "Birthday gift, bonus…" : "Spent on snack…"}" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn ${isDeposit ? "btn-gold" : "btn-danger"}" onclick="submitTx('${bank.id}', '${bank.type}', ${isDeposit})">
+        ${isDeposit ? "Add" : "Subtract"}
+      </button>
+    </div>`);
+}
+
+window.submitTx = function(bankId, type, isDeposit) {
+  const rawVal = parseFloat(document.getElementById("tx-amount").value);
+  if (!rawVal || rawVal <= 0) { document.getElementById("tx-amount").focus(); return; }
+  const amount = type === "money"
+    ? Math.round(rawVal * 100) * (isDeposit ? 1 : -1)
+    : Math.round(rawVal) * (isDeposit ? 1 : -1);
+  const note = document.getElementById("tx-note").value.trim();
+  recordTransaction(bankId, amount, note);
+};
+
+window.closeModal = closeModal;
+
+// ─── Render ───────────────────────────────────────────────────────────────
+function renderBankCard(bank, canManage) {
+  const isMoney = bank.type === "money";
+  const txRows  = (transactions[bank.id] ?? []);
+
+  const txHtml = txRows.length === 0
+    ? `<div style="padding:10px 18px;font-size:.82rem;color:var(--muted);font-style:italic">No transactions yet.</div>`
+    : txRows.map(tx => {
+        const actor   = members.find(m => m.id === tx.actor_id);
+        const actorName = tx.source === "chores" ? "Chores" : (actor?.name ?? "Admin");
+        return `
+          <div class="tx-row">
+            <div class="tx-amount ${tx.amount >= 0 ? "positive" : "negative"}">
+              ${fmtAmount(tx.amount, bank.type)}
+            </div>
+            <div class="tx-detail">
+              <div class="tx-note ${!tx.note ? "muted" : ""}">${tx.note || "No note"}</div>
+              <div class="tx-meta">
+                ${actorName} · ${fmtDate(tx.created_at)}
+                <span class="tx-source ${tx.source}">${tx.source}</span>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+
+  return `
+    <div class="bank-card">
+      <div class="bank-card-header">
+        <div class="bank-type-label">${isMoney ? "💰 Money" : "📱 Screen Time"}</div>
+        <div class="bank-balance ${bank.type}">${fmtBalance(bank)}</div>
+      </div>
+      ${canManage ? `
+      <div class="bank-admin-actions">
+        <button class="btn btn-gold btn-sm" onclick="openTx('${bank.id}', true)">+ Add</button>
+        <button class="btn btn-ghost btn-sm" onclick="openTx('${bank.id}', false)">− Subtract</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="deleteBank('${bank.id}')">Delete bank</button>
+      </div>` : ""}
+      <div class="tx-list">${txHtml}</div>
+    </div>`;
+}
+
+function renderMemberDetail(memberId) {
+  const member    = members.find(m => m.id === memberId);
+  const myBanks   = banks.filter(b => b.member_id === memberId);
+  const moneyBank = myBanks.find(b => b.type === "money");
+  const timeBank  = myBanks.find(b => b.type === "screen_time");
+  const canManage = isAdult(ME);
+  const col       = mc(memberId);
+
+  const bankCards = [
+    moneyBank ? renderBankCard(moneyBank, canManage) : canManage
+      ? `<div class="create-bank-row">No money bank yet.<br/><button class="btn btn-gold btn-sm" onclick="createBank('${memberId}','money')">+ Create Money Bank</button></div>` : "",
+    timeBank  ? renderBankCard(timeBank,  canManage) : canManage
+      ? `<div class="create-bank-row">No screen time bank yet.<br/><button class="btn btn-blue btn-sm" onclick="createBank('${memberId}','screen_time')">+ Create Screen Time Bank</button></div>` : "",
+  ].filter(Boolean).join("");
+
+  return `
+    <div class="back-bar">
+      ${isAdult(ME) ? `<button class="btn btn-ghost btn-sm" onclick="goBack()">← Back</button>` : ""}
+      <h2>
+        <span class="avatar-sm" style="background:${col}">${initial(member?.name ?? "?")}</span>
+        ${esc(member?.name ?? "?")}
+      </h2>
+    </div>
+    ${bankCards || `<div class="empty">No banks yet.</div>`}`;
+}
+
+function renderAdminOverview() {
+  const kids = members.filter(m => !isAdult(m));
+  const adults = members.filter(m => isAdult(m) && banks.some(b => b.member_id === m.id));
+  const showMembers = [...kids, ...adults];
+
+  if (showMembers.length === 0) {
+    return `<div class="empty">No family members found. Add members in the hub to get started.</div>`;
+  }
+
+  const cards = showMembers.map(m => {
+    const mb   = banks.find(b => b.member_id === m.id && b.type === "money");
+    const tb   = banks.find(b => b.member_id === m.id && b.type === "screen_time");
+    const pills = [
+      mb ? `<span class="bank-pill money">💰 ${fmtBalance(mb)}</span>` : `<span class="bank-pill empty">No money bank</span>`,
+      tb ? `<span class="bank-pill screen_time">📱 ${fmtBalance(tb)}</span>` : `<span class="bank-pill empty">No screen time bank</span>`,
+    ].join("");
+    return `
+      <div class="member-card" onclick="viewMember('${m.id}')">
+        <div class="member-card-top">
+          <div class="avatar" style="background:${mc(m.id)}">${initial(m.name)}</div>
+          <div><div class="name">${esc(m.name)}</div><div class="role">${m.role}</div></div>
+        </div>
+        <div class="bank-pills">${pills}</div>
+        <div class="hint">Tap to manage →</div>
+      </div>`;
+  }).join("");
+
+  return `
+    <div class="section-title">Family Banks</div>
+    <div class="members-grid">${cards}</div>`;
+}
+
+function render() {
+  if (!ME) { document.getElementById("root").innerHTML = `<div class="empty">Please log in.</div>`; return; }
+
+  const meIsAdult = isAdult(ME);
+  const syncing   = processingEvents ? `<span class="processing-badge">syncing…</span>` : "";
+
+  document.getElementById("root").innerHTML = `
+    <header>
+      <div><h1>🐷 Piggy Bank${syncing}</h1><div class="sub">Savings &amp; screen time</div></div>
+    </header>
+    <div id="main-content"></div>`;
+
+  const main = document.getElementById("main-content");
+  if (meIsAdult && viewMemberId) {
+    main.innerHTML = renderMemberDetail(viewMemberId);
+  } else if (meIsAdult) {
+    main.innerHTML = renderAdminOverview();
+  } else {
+    main.innerHTML = renderMemberDetail(ME.id);
+  }
+}
+
+window.viewMember  = id => { viewMemberId = id; render(); };
+window.goBack      = ()  => { viewMemberId = null; render(); };
+window.openTx      = (bankId, isDeposit) => { const bank = banks.find(b => b.id === bankId); if (bank) openTransactionModal(bank, isDeposit); };
+window.deleteBank  = deleteBank;
+window.createBank  = async (memberId, type) => { await createBank(memberId, type); };
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+(async () => {
+  await loadMembers();
+  if (DB) {
+    await initDb();
+    await loadBanks();
+    await loadAllTransactions();
+    // Process any pending chore allowance events
+    processAllowanceEvents().then(async () => {
+      await loadBanks();
+      await loadAllTransactions();
+      render();
+    }).catch(() => {});
+  }
+  render();
+})();
+</script>
+</body>
+</html>

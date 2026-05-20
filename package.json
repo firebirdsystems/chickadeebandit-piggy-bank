@@ -1,0 +1,8 @@
+{
+  "name": "chickadee-app-piggy-bank",
+  "version": "1.0.0",
+  "description": "Piggy Bank app for Family Hub",
+  "type": "module",
+  "scripts": { "build": "node build.mjs" },
+  "license": "MIT"
+}

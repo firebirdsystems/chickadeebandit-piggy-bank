@@ -1,0 +1,25 @@
+{
+  "id": "piggy-bank",
+  "name": "Piggy Bank",
+  "version": "1.0.0",
+  "description": "Per-member piggy banks for money and screen time. Adults manage everyone's banks; kids see only their own. Automatically receives chore allowance deposits from the Chores app.",
+  "entrypoint": "index.html",
+  "runtime": "static",
+  "category": "family",
+  "tags": ["money", "allowance", "screen-time", "savings", "kids"],
+  "data_access": {
+    "reads": ["family.members"],
+    "writes": []
+  },
+  "permissions": {
+    "default_audience": "everyone",
+    "requires_approval": false
+  },
+  "storage": "db",
+  "consumes": ["allowance.weekly"],
+  "nav": { "label": "Piggy Bank", "icon": "🐷" },
+  "widget": { "label": "Piggy Bank", "size": "small" },
+  "resource_limits": {
+    "max_db_bytes": 52428800
+  }
+}

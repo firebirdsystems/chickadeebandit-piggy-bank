@@ -6,9 +6,17 @@
   "entrypoint": "index.html",
   "runtime": "static",
   "category": "family",
-  "tags": ["money", "allowance", "screen-time", "savings", "kids"],
+  "tags": [
+    "money",
+    "allowance",
+    "screen-time",
+    "savings",
+    "kids"
+  ],
   "data_access": {
-    "reads": ["family.members"],
+    "reads": [
+      "family.members"
+    ],
     "writes": []
   },
   "permissions": {
@@ -16,10 +24,18 @@
     "requires_approval": false
   },
   "storage": "db",
-  "consumes": ["allowance.weekly"],
-  "nav": { "label": "Piggy Bank", "icon": "🐷" },
-  "widget": { "label": "Piggy Bank", "size": "small" },
+  "consumes": [
+    "allowance.weekly"
+  ],
+  "nav": {
+    "label": "Piggy Bank"
+  },
+  "widget": {
+    "label": "Piggy Bank",
+    "size": "small"
+  },
   "resource_limits": {
     "max_db_bytes": 52428800
-  }
+  },
+  "icon": "🐷"
 }

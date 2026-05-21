@@ -298,7 +298,7 @@ async function processOneEvent(ev) {
     }
   }
 
-  await db(`INSERT OR IGNORE INTO processed_events (event_id, processed_at) VALUES (?, ?)`, [ev.id, now]);
+  await db(`INSERT INTO processed_events (event_id, processed_at) VALUES (?, ?) ON CONFLICT (event_id) DO NOTHING`, [ev.id, now]);
 }
 
 // ─── Admin actions ────────────────────────────────────────────────────────

@@ -157,7 +157,7 @@
 </div>
 
 <script type="module">
-import { memberColor, initial, esc, isAdult } from "/hub-sdk.js";
+import { memberColor, initial, esc, isAdult, hubConfirm } from "/hub-sdk.js";
 
 const CONTEXT    = window.__CONTEXT_URL ?? "";
 const DB         = window.__DB_URL      ?? "";
@@ -300,7 +300,7 @@ async function createBank(memberId, type) {
 }
 
 async function deleteBank(bankId) {
-  if (!confirm("Delete this bank and all its transaction history?")) return;
+  if (!await hubConfirm({ message: "Delete this bank?", description: "All transaction history will be permanently removed.", confirmLabel: "Delete bank", destructive: true })) return;
   await db(`DELETE FROM transactions WHERE bank_id = ?`, [bankId]);
   await db(`DELETE FROM piggy_banks WHERE id = ?`, [bankId]);
   delete transactions[bankId];

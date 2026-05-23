@@ -158,6 +158,7 @@
 
 <script type="module">
 import { memberColor, initial, esc, isAdult, hubConfirm } from "/hub-sdk.js";
+import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate } from "./logic.js";
 
 const CONTEXT    = window.__CONTEXT_URL ?? "";
 const DB         = window.__DB_URL      ?? "";
@@ -216,26 +217,6 @@ async function loadAllTransactions() {
 }
 
 // ─── Format helpers ───────────────────────────────────────────────────────
-function fmtMoney(cents) {
-  const neg = cents < 0;
-  return `${neg ? "-" : ""}$${(Math.abs(cents) / 100).toFixed(2)}`;
-}
-function fmtTime(minutes) {
-  const m = Math.abs(minutes);
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60), rem = m % 60;
-  return rem > 0 ? `${h}h ${rem}m` : `${h}h`;
-}
-function fmtBalance(bank) {
-  return bank.type === "money" ? fmtMoney(bank.balance) : fmtTime(bank.balance);
-}
-function fmtAmount(amount, type) {
-  const s = type === "money" ? fmtMoney(Math.abs(amount)) : fmtTime(Math.abs(amount));
-  return (amount >= 0 ? "+" : "−") + s;
-}
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 function mc(id) { return memberColor(id, members); }
 
 // ─── Allowance event processing ───────────────────────────────────────────

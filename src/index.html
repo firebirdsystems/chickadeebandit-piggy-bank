@@ -224,7 +224,15 @@ async function processAllowanceEvents() {
   if (processingEvents) return;
   processingEvents = true;
   try {
-    const res = await fetch(`${EVENTS_URL}?type=allowance.weekly`);
+    // Only fetch events newer than the most recent one we've already imported.
+    const { rows: [lastRow] } = await db(
+      `SELECT MAX(created_at) as last_at FROM transactions WHERE source_event_id IS NOT NULL`
+    );
+    const since = lastRow?.last_at;
+    const url = `${EVENTS_URL}?type=allowance.weekly` +
+      (since ? `&since=${encodeURIComponent(since)}` : "");
+
+    const res = await fetch(url);
     if (!res.ok) return;
     const data = await res.json();
     const events = Array.isArray(data) ? data : (data.events ?? []);
@@ -233,7 +241,11 @@ async function processAllowanceEvents() {
 }
 
 async function processOneEvent(ev) {
-  const { rows: seen } = await db(`SELECT 1 FROM processed_events WHERE event_id = ?`, [ev.id]);
+  // source_event_id on transactions is the correctness guard against duplicates
+  // (protects if the since cutoff is inclusive, or two tabs race)
+  const { rows: seen } = await db(
+    `SELECT 1 FROM transactions WHERE source_event_id = ?`, [ev.id]
+  );
   if (seen.length) return;
 
   const p = ev.payload ?? {};
@@ -247,9 +259,11 @@ async function processOneEvent(ev) {
     const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? AND type = 'money'`, [p.member_id]);
     if (rows.length) {
       const bank = rows[0];
-      const txId = crypto.randomUUID();
-      await db(`INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, 'chores', ?, ?, 'chores', ?)`,
-        [txId, bank.id, p.member_id, p.cents_earned, note, now]);
+      await db(
+        `INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
+         VALUES (?, ?, ?, 'chores', ?, ?, 'chores', ?, ?)`,
+        [crypto.randomUUID(), bank.id, p.member_id, p.cents_earned, note, now, ev.id]
+      );
       await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [p.cents_earned, bank.id]);
     }
   }
@@ -259,14 +273,14 @@ async function processOneEvent(ev) {
     const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? AND type = 'screen_time'`, [p.member_id]);
     if (rows.length) {
       const bank = rows[0];
-      const txId = crypto.randomUUID();
-      await db(`INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, 'chores', ?, ?, 'chores', ?)`,
-        [txId, bank.id, p.member_id, p.minutes_earned, note, now]);
+      await db(
+        `INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
+         VALUES (?, ?, ?, 'chores', ?, ?, 'chores', ?, ?)`,
+        [crypto.randomUUID(), bank.id, p.member_id, p.minutes_earned, note, now, ev.id]
+      );
       await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [p.minutes_earned, bank.id]);
     }
   }
-
-  await db(`INSERT INTO processed_events (event_id, processed_at) VALUES (?, ?) ON CONFLICT (event_id) DO NOTHING`, [ev.id, now]);
 }
 
 // ─── Admin actions ────────────────────────────────────────────────────────

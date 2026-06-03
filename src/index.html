@@ -213,7 +213,7 @@ async function loadTransactionsForBank(bankId) {
 }
 
 async function loadAllTransactions() {
-  for (const bank of banks) await loadTransactionsForBank(bank.id);
+  await Promise.all(banks.map(bank => loadTransactionsForBank(bank.id)));
 }
 
 // ─── Format helpers ───────────────────────────────────────────────────────
@@ -236,7 +236,7 @@ async function processAllowanceEvents() {
     if (!res.ok) return;
     const data = await res.json();
     const events = Array.isArray(data) ? data : (data.events ?? []);
-    for (const ev of events) await processOneEvent(ev);
+    await Promise.all(events.map(ev => processOneEvent(ev)));
   } catch {} finally { processingEvents = false; }
 }
 
@@ -290,7 +290,7 @@ async function createBank(memberId, type) {
   const now  = new Date().toISOString();
   await db(`INSERT INTO piggy_banks (id, member_id, name, type, balance, created_at) VALUES (?, ?, ?, ?, 0, ?)`, [id, memberId, name, type, now]);
   await loadBanks();
-  await loadAllTransactions();
+  transactions[id] = [];
   render();
 }
 
@@ -308,14 +308,19 @@ async function recordTransaction(bankId, amount, note, source = "manual") {
   if (!bank || !ME) return;
   const id  = crypto.randomUUID();
   const now = new Date().toISOString();
+
+  // Optimistic update: reflect balance change and close modal immediately
+  bank.balance += amount;
+  const optimisticTx = { id, bank_id: bankId, member_id: bank.member_id, actor_id: ME.id, amount, note, source, created_at: now };
+  transactions[bankId] = [optimisticTx, ...(transactions[bankId] ?? [])].slice(0, 10);
+  closeModal();
+  render();
+
+  // Persist to DB, then sync tx list to match server order/content
   await db(`INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [id, bankId, bank.member_id, ME.id, amount, note, source, now]);
   await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [amount, bankId]);
-  // Update local state
-  const updated = banks.find(b => b.id === bankId);
-  if (updated) updated.balance += amount;
   await loadTransactionsForBank(bankId);
-  closeModal();
   render();
 }
 

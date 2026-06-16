@@ -199,16 +199,16 @@ async function loadMembers() {
 async function loadBanks() {
   if (!ME) return;
   if (isAdult(ME)) {
-    const { rows } = await db(`SELECT * FROM piggy_banks ORDER BY member_id, type`);
+    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks ORDER BY member_id, type`);
     banks = rows ?? [];
   } else {
-    const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? ORDER BY type`, [ME.id]);
+    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? ORDER BY type`, [ME.id]);
     banks = rows ?? [];
   }
 }
 
 async function loadTransactionsForBank(bankId) {
-  const { rows } = await db(`SELECT * FROM transactions WHERE bank_id = ? ORDER BY created_at DESC LIMIT 10`, [bankId]);
+  const { rows } = await db(`SELECT * FROM app_piggy_bank__transactions WHERE bank_id = ? ORDER BY created_at DESC LIMIT 10`, [bankId]);
   transactions[bankId] = rows ?? [];
 }
 
@@ -226,7 +226,7 @@ async function processAllowanceEvents() {
   try {
     // Only fetch events newer than the most recent one we've already imported.
     const { rows: [lastRow] } = await db(
-      `SELECT MAX(created_at) as last_at FROM transactions WHERE source_event_id IS NOT NULL`
+      `SELECT MAX(created_at) as last_at FROM app_piggy_bank__transactions WHERE source_event_id IS NOT NULL`
     );
     const since = lastRow?.last_at;
     const url = `${EVENTS_URL}?type=reward.earned` +
@@ -244,7 +244,7 @@ async function processOneEvent(ev) {
   // source_event_id on transactions is the correctness guard against duplicates
   // (protects if the since cutoff is inclusive, or two tabs race)
   const { rows: seen } = await db(
-    `SELECT 1 FROM transactions WHERE source_event_id = ?`, [ev.id]
+    `SELECT 1 FROM app_piggy_bank__transactions WHERE source_event_id = ?`, [ev.id]
   );
   if (seen.length) return;
 
@@ -257,48 +257,50 @@ async function processOneEvent(ev) {
 
   // Deposit money
   if ((p.cents_earned ?? 0) > 0 && p.reward_type !== "screen_time") {
-    const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? AND type = 'money'`, [p.member_id]);
+    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? AND type = 'money'`, [p.member_id]);
     if (rows.length) {
       const bank = rows[0];
       await db(
-        `INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
+        `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [crypto.randomUUID(), bank.id, p.member_id, src, p.cents_earned, note, src, now, ev.id]
       );
-      await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [p.cents_earned, bank.id]);
+      await db(`UPDATE app_piggy_bank__piggy_banks SET balance = balance + ? WHERE id = ?`, [p.cents_earned, bank.id]);
     }
   }
 
   // Deposit screen time
   if ((p.minutes_earned ?? 0) > 0 && p.reward_type !== "money") {
-    const { rows } = await db(`SELECT * FROM piggy_banks WHERE member_id = ? AND type = 'screen_time'`, [p.member_id]);
+    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? AND type = 'screen_time'`, [p.member_id]);
     if (rows.length) {
       const bank = rows[0];
       await db(
-        `INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
+        `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [crypto.randomUUID(), bank.id, p.member_id, src, p.minutes_earned, note, src, now, ev.id]
       );
-      await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [p.minutes_earned, bank.id]);
+      await db(`UPDATE app_piggy_bank__piggy_banks SET balance = balance + ? WHERE id = ?`, [p.minutes_earned, bank.id]);
     }
   }
 }
 
 // ─── Admin actions ────────────────────────────────────────────────────────
 async function createBank(memberId, type) {
+  if (!isAdult(ME)) return;
   const name = type === "money" ? "Money" : "Screen Time";
   const id   = crypto.randomUUID();
   const now  = new Date().toISOString();
-  await db(`INSERT INTO piggy_banks (id, member_id, name, type, balance, created_at) VALUES (?, ?, ?, ?, 0, ?)`, [id, memberId, name, type, now]);
+  await db(`INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, balance, created_at) VALUES (?, ?, ?, ?, 0, ?)`, [id, memberId, name, type, now]);
   await loadBanks();
   transactions[id] = [];
   render();
 }
 
 async function deleteBank(bankId) {
+  if (!isAdult(ME)) return;
   if (!await hubConfirm({ message: "Delete this bank?", description: "All transaction history will be permanently removed.", confirmLabel: "Delete bank", destructive: true })) return;
-  await db(`DELETE FROM transactions WHERE bank_id = ?`, [bankId]);
-  await db(`DELETE FROM piggy_banks WHERE id = ?`, [bankId]);
+  await db(`DELETE FROM app_piggy_bank__transactions WHERE bank_id = ?`, [bankId]);
+  await db(`DELETE FROM app_piggy_bank__piggy_banks WHERE id = ?`, [bankId]);
   delete transactions[bankId];
   await loadBanks();
   render();
@@ -307,6 +309,7 @@ async function deleteBank(bankId) {
 async function recordTransaction(bankId, amount, note, source = "manual") {
   const bank = banks.find(b => b.id === bankId);
   if (!bank || !ME) return;
+  if (bank.member_id !== ME.id && !isAdult(ME)) return;
   const id  = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -318,9 +321,9 @@ async function recordTransaction(bankId, amount, note, source = "manual") {
   render();
 
   // Persist to DB, then sync tx list to match server order/content
-  await db(`INSERT INTO transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  await db(`INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [id, bankId, bank.member_id, ME.id, amount, note, source, now]);
-  await db(`UPDATE piggy_banks SET balance = balance + ? WHERE id = ?`, [amount, bankId]);
+  await db(`UPDATE app_piggy_bank__piggy_banks SET balance = balance + ? WHERE id = ?`, [amount, bankId]);
   await loadTransactionsForBank(bankId);
   render();
 }

@@ -24,6 +24,16 @@
     "requires_approval": false
   },
   "storage": "db",
+  "row_policies": {
+    "piggy_banks": { "kind": "owner_only", "member_column": "member_id" },
+    "transactions": {
+      "kind": "owner_only_with_fk_check",
+      "member_column": "member_id",
+      "fk_column": "bank_id",
+      "fk_table": "piggy_banks",
+      "fk_member_column": "member_id"
+    }
+  },
   "subscribes_to": [
     "reward.earned"
   ],

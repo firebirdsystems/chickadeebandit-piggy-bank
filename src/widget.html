@@ -122,7 +122,7 @@ async function loadMembers() {
 async function load() {
   const [members, { rows: banks }] = await Promise.all([
     loadMembers(),
-    dbq(`SELECT member_id, type, balance FROM piggy_banks ORDER BY member_id, type`),
+    dbq(`SELECT member_id, type, balance FROM app_piggy_bank__piggy_banks ORDER BY member_id, type`),
   ]);
 
   // Group banks by member

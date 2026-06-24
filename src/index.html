@@ -165,6 +165,12 @@ const DB         = window.__DB_URL      ?? "";
 const EVENTS_URL = window.__EVENTS_URL  ?? "/api/events";
 const ME         = window.__CURRENT_MEMBER ?? null;
 
+// Only credit reward.earned events from apps we trust to mint allowance. source_app_id
+// is set server-side from the publishing app's URL (a child can't spoof it), and the
+// trusted publisher (chores) requires the adult role to emit reward.earned via its
+// publish_acls — so this is defense-in-depth against any other app emitting the event.
+const TRUSTED_REWARD_SOURCES = ["chore-tracker"];
+
 let members          = [];
 let banks            = [];       // piggy banks relevant to current user
 let transactions     = {};       // bankId → last 10 rows
@@ -221,6 +227,10 @@ function mc(id) { return memberColor(id, members); }
 
 // ─── Allowance event processing ───────────────────────────────────────────
 async function processAllowanceEvents() {
+  // Crediting writes to banks/transactions, which are adult-only (row policies).
+  // Only an adult's client processes reward events; the source_event_id dedup means
+  // a credit is applied exactly once, whenever an adult next opens the app.
+  if (!ME || !isAdult(ME)) return;
   if (processingEvents) return;
   processingEvents = true;
   try {
@@ -247,6 +257,9 @@ async function processOneEvent(ev) {
     `SELECT 1 FROM app_piggy_bank__transactions WHERE source_event_id = ?`, [ev.id]
   );
   if (seen.length) return;
+
+  // Ignore reward events from any app we don't trust to mint allowance.
+  if (!TRUSTED_REWARD_SOURCES.includes(ev.source_app_id)) return;
 
   const p = ev.payload ?? {};
   if (!p.member_id) return;
@@ -309,7 +322,7 @@ async function deleteBank(bankId) {
 async function recordTransaction(bankId, amount, note, source = "manual") {
   const bank = banks.find(b => b.id === bankId);
   if (!bank || !ME) return;
-  if (bank.member_id !== ME.id && !isAdult(ME)) return;
+  if (!isAdult(ME)) return;  // balances are adult-controlled (enforced server-side too)
   const id  = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -365,7 +378,7 @@ function openTransactionModal(bank, isDeposit) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn ${isDeposit ? "btn-gold" : "btn-danger"}" onclick="submitTx('${bank.id}', '${bank.type}', ${isDeposit})">
+      <button class="btn ${isDeposit ? "btn-gold" : "btn-danger"}" onclick="submitTx('${esc(bank.id)}', '${esc(bank.type)}', ${isDeposit})">
         ${isDeposit ? "Add" : "Subtract"}
       </button>
     </div>`);
@@ -393,16 +406,17 @@ function renderBankCard(bank, canManage) {
     : txRows.map(tx => {
         const actor   = members.find(m => m.id === tx.actor_id);
         const actorName = tx.source === "chores" ? "Chores" : (actor?.name ?? "Admin");
+        const safeSource = (tx.source ?? "manual").replace(/[^a-zA-Z0-9_-]/g, "");
         return `
           <div class="tx-row">
             <div class="tx-amount ${tx.amount >= 0 ? "positive" : "negative"}">
               ${fmtAmount(tx.amount, bank.type)}
             </div>
             <div class="tx-detail">
-              <div class="tx-note ${!tx.note ? "muted" : ""}">${tx.note || "No note"}</div>
+              <div class="tx-note ${!tx.note ? "muted" : ""}">${tx.note ? esc(tx.note) : "No note"}</div>
               <div class="tx-meta">
-                ${actorName} · ${fmtDate(tx.created_at)}
-                <span class="tx-source ${tx.source}">${tx.source}</span>
+                ${esc(actorName)} · ${fmtDate(tx.created_at)}
+                <span class="tx-source ${safeSource}">${esc(tx.source ?? "manual")}</span>
               </div>
             </div>
           </div>`;
@@ -416,9 +430,9 @@ function renderBankCard(bank, canManage) {
       </div>
       ${canManage ? `
       <div class="bank-admin-actions">
-        <button class="btn btn-gold btn-sm" onclick="openTx('${bank.id}', true)">+ Add</button>
-        <button class="btn btn-ghost btn-sm" onclick="openTx('${bank.id}', false)">− Subtract</button>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="deleteBank('${bank.id}')">Delete bank</button>
+        <button class="btn btn-gold btn-sm" onclick="openTx('${esc(bank.id)}', true)">+ Add</button>
+        <button class="btn btn-ghost btn-sm" onclick="openTx('${esc(bank.id)}', false)">− Subtract</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="deleteBank('${esc(bank.id)}')">Delete bank</button>
       </div>` : ""}
       <div class="tx-list">${txHtml}</div>
     </div>`;
@@ -470,7 +484,7 @@ function renderAdminOverview() {
       <div class="member-card" onclick="viewMember('${m.id}')">
         <div class="member-card-top">
           <div class="avatar" style="background:${mc(m.id)}">${initial(m.name)}</div>
-          <div><div class="name">${esc(m.name)}</div><div class="role">${m.role}</div></div>
+          <div><div class="name">${esc(m.name)}</div><div class="role">${esc(m.role)}</div></div>
         </div>
         <div class="bank-pills">${pills}</div>
         <div class="hint">Tap to manage →</div>

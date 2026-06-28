@@ -350,6 +350,9 @@ function openModal(html) {
   modalEl.innerHTML = `<div class="modal">${html}</div>`;
   modalEl.addEventListener("click", e => { if (e.target === modalEl) closeModal(); });
   document.body.appendChild(modalEl);
+  // Programmatic focus works inside cross-origin iframes (unlike the autofocus
+  // attribute, which the browser blocks) because it rides the user's click gesture.
+  modalEl.querySelector("[data-autofocus]")?.focus();
 }
 function closeModal() { modalEl?.remove(); modalEl = null; }
 
@@ -368,7 +371,7 @@ function openTransactionModal(bank, isDeposit) {
       <label>Amount (${unit})</label>
       <div class="input-prefix">
         ${isMoney ? `<span class="prefix">$</span>` : ""}
-        <input id="tx-amount" type="number" min="0" step="${isMoney ? "0.01" : "1"}" placeholder="${isMoney ? "0.00" : "30"}" autofocus />
+        <input id="tx-amount" type="number" min="0" step="${isMoney ? "0.01" : "1"}" placeholder="${isMoney ? "0.00" : "30"}" data-autofocus />
       </div>
       ${!isMoney ? `<div class="amount-hint">Enter minutes (e.g. 30 = 30 min, 90 = 1h 30m)</div>` : ""}
     </div>

@@ -27,3 +27,14 @@ export function fmtAmount(amount, type) {
 export function fmtDate(iso) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
+
+export function goalProgress(goal, bank) {
+  const target = Math.max(0, Number(goal?.target ?? 0));
+  if (target === 0) return 0;
+  const balance = Math.max(0, Number(bank?.balance ?? 0));
+  return Math.min(100, Math.round((balance / target) * 100));
+}
+
+export function remainingForGoal(goal, bank) {
+  return Math.max(0, Number(goal?.target ?? 0) - Math.max(0, Number(bank?.balance ?? 0)));
+}

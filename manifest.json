@@ -2,7 +2,7 @@
   "id": "piggy-bank",
   "name": "Piggy Bank",
   "version": "1.0.0",
-  "description": "Per-member piggy banks for money and screen time. Adults manage everyone's banks; kids see only their own. Automatically receives chore allowance deposits from the Chores app.",
+  "description": "Per-member piggy banks for money, screen time, and savings goals. Adults manage everyone's banks; kids see their own balances and progress toward what they are working for. Automatically receives chore allowance deposits from the Chores app.",
   "entrypoint": "index.html",
   "runtime": "static",
   "category": "family",
@@ -26,11 +26,17 @@
   "storage": "db",
   "row_policies": {
     "piggy_banks": { "kind": "adult_writable", "member_read_column": "member_id" },
+    "savings_goals": { "kind": "adult_writable", "member_read_column": "member_id" },
     "transactions": { "kind": "adult_writable", "member_read_column": "member_id" },
     "processed_events": { "kind": "adult_only" }
   },
   "subscribes_to": [
+    "allowance.earned",
     "reward.earned"
+  ],
+  "exports": [
+    "member-balances",
+    "savings-goals"
   ],
   "nav": {
     "label": "Piggy Bank"

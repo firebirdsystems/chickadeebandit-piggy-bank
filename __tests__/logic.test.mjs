@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate } from "../src/logic.js";
+import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal } from "../src/logic.js";
 
 // ── fmtMoney ──────────────────────────────────────────────────────────────────
 
@@ -81,5 +81,20 @@ describe("fmtAmount", () => {
   it("uses absolute value for the amount", () => {
     expect(fmtAmount(-500, "money")).toBe("−$5.00");
     expect(fmtAmount(500, "money")).toBe("+$5.00");
+  });
+});
+
+// ── savings goals ─────────────────────────────────────────────────────────────
+
+describe("savings goals", () => {
+  it("calculates clamped progress from bank balance and target", () => {
+    expect(goalProgress({ target: 1000 }, { balance: 250 })).toBe(25);
+    expect(goalProgress({ target: 1000 }, { balance: 1200 })).toBe(100);
+    expect(goalProgress({ target: 0 }, { balance: 1200 })).toBe(0);
+  });
+
+  it("calculates remaining balance without going negative", () => {
+    expect(remainingForGoal({ target: 1000 }, { balance: 250 })).toBe(750);
+    expect(remainingForGoal({ target: 1000 }, { balance: 1200 })).toBe(0);
   });
 });

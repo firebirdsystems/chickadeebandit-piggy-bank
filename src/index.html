@@ -92,6 +92,15 @@
     .bank-balance.screen_time { color: var(--blue); }
     .bank-admin-actions { display: flex; gap: 8px; padding: 0 18px 14px; }
 
+    /* ── Savings goals ──────────────────────────────────── */
+    .goal-list { padding: 0 18px 14px; display: grid; gap: 8px; }
+    .goal-card { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg); }
+    .goal-top { display: flex; justify-content: space-between; gap: 10px; font-size: .85rem; font-weight: 700; margin-bottom: 6px; }
+    .goal-meta { font-size: .76rem; color: var(--muted); margin-top: 5px; display: flex; justify-content: space-between; gap: 8px; }
+    .goal-bar { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .goal-fill { height: 100%; background: var(--green); border-radius: inherit; }
+    .goal-actions { margin-top: 8px; display: flex; justify-content: flex-end; }
+
     /* ── Transactions ────────────────────────────────────── */
     .tx-list { border-top: 1px solid var(--border); }
     .tx-row { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border); }
@@ -158,21 +167,22 @@
 
 <script type="module">
 import { memberColor, initial, esc, isAdult, hubConfirm } from "/hub-sdk.js";
-import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate } from "./logic.js";
+import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal } from "./logic.js";
 
 const CONTEXT    = window.__CONTEXT_URL ?? "";
 const DB         = window.__DB_URL      ?? "";
 const EVENTS_URL = window.__EVENTS_URL  ?? "/api/events";
 const ME         = window.__CURRENT_MEMBER ?? null;
 
-// Only credit reward.earned events from apps we trust to mint allowance. source_app_id
+// Only credit allowance/reward events from apps we trust to mint balances. source_app_id
 // is set server-side from the publishing app's URL (a child can't spoof it), and the
-// trusted publisher (chores) requires the adult role to emit reward.earned via its
-// publish_acls — so this is defense-in-depth against any other app emitting the event.
+// trusted publisher (chores) requires the adult role to emit allowance.earned via
+// publish_acls. reward.earned remains supported for older Chores bundles.
 const TRUSTED_REWARD_SOURCES = ["chore-tracker"];
 
 let members          = [];
 let banks            = [];       // piggy banks relevant to current user
+let goals            = [];       // active savings goals relevant to current user
 let transactions     = {};       // bankId → last 10 rows
 let viewMemberId     = null;     // admin: which member detail is open
 let processingEvents = false;
@@ -213,6 +223,17 @@ async function loadBanks() {
   }
 }
 
+async function loadGoals() {
+  if (!ME) return;
+  if (isAdult(ME)) {
+    const { rows } = await db(`SELECT * FROM app_piggy_bank__savings_goals WHERE status = 'active' ORDER BY created_at`);
+    goals = rows ?? [];
+  } else {
+    const { rows } = await db(`SELECT * FROM app_piggy_bank__savings_goals WHERE member_id = ? AND status = 'active' ORDER BY created_at`, [ME.id]);
+    goals = rows ?? [];
+  }
+}
+
 async function loadTransactionsForBank(bankId) {
   const { rows } = await db(`SELECT * FROM app_piggy_bank__transactions WHERE bank_id = ? ORDER BY created_at DESC LIMIT 10`, [bankId]);
   transactions[bankId] = rows ?? [];
@@ -239,13 +260,16 @@ async function processAllowanceEvents() {
       `SELECT MAX(created_at) as last_at FROM app_piggy_bank__transactions WHERE source_event_id IS NOT NULL`
     );
     const since = lastRow?.last_at;
-    const url = `${EVENTS_URL}?type=reward.earned` +
-      (since ? `&since=${encodeURIComponent(since)}` : "");
-
-    const res = await fetch(url);
-    if (!res.ok) return;
-    const data = await res.json();
-    const events = Array.isArray(data) ? data : (data.events ?? []);
+    const types = ["allowance.earned", "reward.earned"];
+    const batches = await Promise.all(types.map(async type => {
+      const url = `${EVENTS_URL}?type=${encodeURIComponent(type)}` +
+        (since ? `&since=${encodeURIComponent(since)}` : "");
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.events ?? []);
+    }));
+    const events = batches.flat();
     await Promise.all(events.map(ev => processOneEvent(ev)));
   } catch {} finally { processingEvents = false; }
 }
@@ -266,7 +290,7 @@ async function processOneEvent(ev) {
 
   const now  = new Date().toISOString();
   const note = p.note || p.source_label || "Reward";
-  const src  = ev.source_app_id ?? "unknown";
+  const src  = ev.source_app_id === "chore-tracker" ? "chores" : (ev.source_app_id ?? "unknown");
 
   // Deposit money
   if ((p.cents_earned ?? 0) > 0 && p.reward_type !== "screen_time") {
@@ -341,6 +365,28 @@ async function recordTransaction(bankId, amount, note, source = "manual") {
   render();
 }
 
+async function createGoal(memberId, bankType, title, target) {
+  if (!isAdult(ME) || !title || target <= 0) return;
+  await db(
+    `INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at)
+     VALUES (?, ?, ?, ?, ?, 'active', ?)`,
+    [crypto.randomUUID(), memberId, bankType, title, target, new Date().toISOString()]
+  );
+  await loadGoals();
+  closeModal();
+  render();
+}
+
+async function archiveGoal(goalId) {
+  if (!isAdult(ME)) return;
+  await db(
+    `UPDATE app_piggy_bank__savings_goals SET status = 'archived' WHERE id = ?`,
+    [goalId]
+  );
+  goals = goals.filter(g => g.id !== goalId);
+  render();
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────
 let modalEl = null;
 function openModal(html) {
@@ -387,6 +433,31 @@ function openTransactionModal(bank, isDeposit) {
     </div>`);
 }
 
+function openGoalModal(bank) {
+  const member  = members.find(m => m.id === bank.member_id);
+  const isMoney = bank.type === "money";
+  openModal(`
+    <h3>🎯 Add Goal</h3>
+    <div style="font-size:.88rem;color:var(--muted);margin-bottom:16px">
+      For <strong>${esc(member?.name ?? "?")}</strong> · ${isMoney ? "Money" : "Screen Time"}
+    </div>
+    <div class="form-group">
+      <label>Goal</label>
+      <input id="goal-title" type="text" placeholder="${isMoney ? "New bike" : "Saturday game time"}" data-autofocus />
+    </div>
+    <div class="form-group">
+      <label>Target (${isMoney ? "dollars" : "minutes"})</label>
+      <div class="input-prefix">
+        ${isMoney ? `<span class="prefix">$</span>` : ""}
+        <input id="goal-target" type="number" min="1" step="${isMoney ? "0.01" : "1"}" placeholder="${isMoney ? "25.00" : "60"}" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitGoal('${esc(bank.id)}')">Save goal</button>
+    </div>`);
+}
+
 window.submitTx = function(bankId, type, isDeposit) {
   const rawVal = parseFloat(document.getElementById("tx-amount").value);
   if (!rawVal || rawVal <= 0) { document.getElementById("tx-amount").focus(); return; }
@@ -397,12 +468,45 @@ window.submitTx = function(bankId, type, isDeposit) {
   recordTransaction(bankId, amount, note);
 };
 
+window.submitGoal = function(bankId) {
+  const bank = banks.find(b => b.id === bankId);
+  if (!bank) return;
+  const title = document.getElementById("goal-title").value.trim();
+  const rawTarget = parseFloat(document.getElementById("goal-target").value);
+  if (!title) { document.getElementById("goal-title").focus(); return; }
+  if (!rawTarget || rawTarget <= 0) { document.getElementById("goal-target").focus(); return; }
+  const target = bank.type === "money" ? Math.round(rawTarget * 100) : Math.round(rawTarget);
+  createGoal(bank.member_id, bank.type, title, target);
+};
+
 window.closeModal = closeModal;
 
 // ─── Render ───────────────────────────────────────────────────────────────
 function renderBankCard(bank, canManage) {
   const isMoney = bank.type === "money";
   const txRows  = (transactions[bank.id] ?? []);
+  const bankGoals = goals.filter(g => g.member_id === bank.member_id && g.bank_type === bank.type);
+  const goalHtml = bankGoals.length === 0
+    ? canManage
+      ? `<div class="goal-list"><button class="btn btn-ghost btn-sm" onclick="openGoal('${esc(bank.id)}')">+ Add goal</button></div>`
+      : ""
+    : `<div class="goal-list">${bankGoals.map(goal => {
+        const progress = goalProgress(goal, bank);
+        const remaining = remainingForGoal(goal, bank);
+        return `
+          <div class="goal-card">
+            <div class="goal-top">
+              <span>${esc(goal.title)}</span>
+              <span>${progress}%</span>
+            </div>
+            <div class="goal-bar"><div class="goal-fill" style="width:${progress}%"></div></div>
+            <div class="goal-meta">
+              <span>${remaining === 0 ? "Ready!" : `${fmtAmount(remaining, bank.type).replace("+", "")} to go`}</span>
+              <span>Target ${bank.type === "money" ? fmtMoney(goal.target) : fmtTime(goal.target)}</span>
+            </div>
+            ${canManage ? `<div class="goal-actions"><button class="btn btn-ghost btn-sm" onclick="archiveGoal('${esc(goal.id)}')">Archive</button></div>` : ""}
+          </div>`;
+      }).join("")}${canManage ? `<button class="btn btn-ghost btn-sm" onclick="openGoal('${esc(bank.id)}')">+ Add another goal</button>` : ""}</div>`;
 
   const txHtml = txRows.length === 0
     ? `<div style="padding:10px 18px;font-size:.82rem;color:var(--muted);font-style:italic">No transactions yet.</div>`
@@ -431,6 +535,7 @@ function renderBankCard(bank, canManage) {
         <div class="bank-type-label">${isMoney ? "💰 Money" : "📱 Screen Time"}</div>
         <div class="bank-balance ${bank.type}">${fmtBalance(bank)}</div>
       </div>
+      ${goalHtml}
       ${canManage ? `
       <div class="bank-admin-actions">
         <button class="btn btn-gold btn-sm" onclick="openTx('${esc(bank.id)}', true)">+ Add</button>
@@ -524,6 +629,8 @@ function render() {
 window.viewMember  = id => { viewMemberId = id; render(); };
 window.goBack      = ()  => { viewMemberId = null; render(); };
 window.openTx      = (bankId, isDeposit) => { const bank = banks.find(b => b.id === bankId); if (bank) openTransactionModal(bank, isDeposit); };
+window.openGoal    = bankId => { const bank = banks.find(b => b.id === bankId); if (bank) openGoalModal(bank); };
+window.archiveGoal = archiveGoal;
 window.deleteBank  = deleteBank;
 window.createBank  = async (memberId, type) => { await createBank(memberId, type); };
 
@@ -533,10 +640,12 @@ window.createBank  = async (memberId, type) => { await createBank(memberId, type
   if (DB) {
     await initDb();
     await loadBanks();
+    await loadGoals();
     await loadAllTransactions();
     // Process any pending chore allowance events
     processAllowanceEvents().then(async () => {
       await loadBanks();
+      await loadGoals();
       await loadAllTransactions();
       render();
     }).catch(() => {});

@@ -114,6 +114,7 @@
     .tx-meta { font-size: 0.72rem; color: var(--muted); }
     .tx-source { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
     .tx-source.chores { background: var(--green-light); color: var(--green); }
+    .tx-source.automation { background: var(--green-light); color: var(--green); }
     .tx-source.manual { background: var(--border); color: var(--muted); }
 
     /* ── Create bank row ─────────────────────────────────── */
@@ -427,7 +428,7 @@ function openTransactionModal(bank, isDeposit) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn ${isDeposit ? "btn-gold" : "btn-danger"}" onclick="submitTx('${esc(bank.id)}', '${esc(bank.type)}', ${isDeposit})">
+      <button class="btn ${isDeposit ? "btn-gold" : "btn-danger"}" data-bank-id="${esc(bank.id)}" data-bank-type="${esc(bank.type)}" onclick="submitTx(this.dataset.bankId, this.dataset.bankType, ${isDeposit})">
         ${isDeposit ? "Add" : "Subtract"}
       </button>
     </div>`);
@@ -454,7 +455,7 @@ function openGoalModal(bank) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitGoal('${esc(bank.id)}')">Save goal</button>
+      <button class="btn btn-primary" data-bank-id="${esc(bank.id)}" onclick="submitGoal(this.dataset.bankId)">Save goal</button>
     </div>`);
 }
 
@@ -488,7 +489,7 @@ function renderBankCard(bank, canManage) {
   const bankGoals = goals.filter(g => g.member_id === bank.member_id && g.bank_type === bank.type);
   const goalHtml = bankGoals.length === 0
     ? canManage
-      ? `<div class="goal-list"><button class="btn btn-ghost btn-sm" onclick="openGoal('${esc(bank.id)}')">+ Add goal</button></div>`
+      ? `<div class="goal-list"><button class="btn btn-ghost btn-sm" data-bank-id="${esc(bank.id)}" onclick="openGoal(this.dataset.bankId)">+ Add goal</button></div>`
       : ""
     : `<div class="goal-list">${bankGoals.map(goal => {
         const progress = goalProgress(goal, bank);
@@ -504,15 +505,15 @@ function renderBankCard(bank, canManage) {
               <span>${remaining === 0 ? "Ready!" : `${fmtAmount(remaining, bank.type).replace("+", "")} to go`}</span>
               <span>Target ${bank.type === "money" ? fmtMoney(goal.target) : fmtTime(goal.target)}</span>
             </div>
-            ${canManage ? `<div class="goal-actions"><button class="btn btn-ghost btn-sm" onclick="archiveGoal('${esc(goal.id)}')">Archive</button></div>` : ""}
+            ${canManage ? `<div class="goal-actions"><button class="btn btn-ghost btn-sm" data-goal-id="${esc(goal.id)}" onclick="archiveGoal(this.dataset.goalId)">Archive</button></div>` : ""}
           </div>`;
-      }).join("")}${canManage ? `<button class="btn btn-ghost btn-sm" onclick="openGoal('${esc(bank.id)}')">+ Add another goal</button>` : ""}</div>`;
+      }).join("")}${canManage ? `<button class="btn btn-ghost btn-sm" data-bank-id="${esc(bank.id)}" onclick="openGoal(this.dataset.bankId)">+ Add another goal</button>` : ""}</div>`;
 
   const txHtml = txRows.length === 0
     ? `<div style="padding:10px 18px;font-size:.82rem;color:var(--muted);font-style:italic">No transactions yet.</div>`
     : txRows.map(tx => {
         const actor   = members.find(m => m.id === tx.actor_id);
-        const actorName = tx.source === "chores" ? "Chores" : (actor?.name ?? "Admin");
+        const actorName = tx.source === "chores" ? "Chores" : tx.source === "automation" ? "Automation" : (actor?.name ?? "Admin");
         const safeSource = (tx.source ?? "manual").replace(/[^a-zA-Z0-9_-]/g, "");
         return `
           <div class="tx-row">
@@ -538,9 +539,9 @@ function renderBankCard(bank, canManage) {
       ${goalHtml}
       ${canManage ? `
       <div class="bank-admin-actions">
-        <button class="btn btn-gold btn-sm" onclick="openTx('${esc(bank.id)}', true)">+ Add</button>
-        <button class="btn btn-ghost btn-sm" onclick="openTx('${esc(bank.id)}', false)">− Subtract</button>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="deleteBank('${esc(bank.id)}')">Delete bank</button>
+        <button class="btn btn-gold btn-sm" data-bank-id="${esc(bank.id)}" onclick="openTx(this.dataset.bankId, true)">+ Add</button>
+        <button class="btn btn-ghost btn-sm" data-bank-id="${esc(bank.id)}" onclick="openTx(this.dataset.bankId, false)">− Subtract</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" data-bank-id="${esc(bank.id)}" onclick="deleteBank(this.dataset.bankId)">Delete bank</button>
       </div>` : ""}
       <div class="tx-list">${txHtml}</div>
     </div>`;
@@ -556,9 +557,9 @@ function renderMemberDetail(memberId) {
 
   const bankCards = [
     moneyBank ? renderBankCard(moneyBank, canManage) : canManage
-      ? `<div class="create-bank-row">No money bank yet.<br/><button class="btn btn-gold btn-sm" onclick="createBank('${memberId}','money')">+ Create Money Bank</button></div>` : "",
+      ? `<div class="create-bank-row">No money bank yet.<br/><button class="btn btn-gold btn-sm" data-member-id="${esc(memberId)}" onclick="createBank(this.dataset.memberId,'money')">+ Create Money Bank</button></div>` : "",
     timeBank  ? renderBankCard(timeBank,  canManage) : canManage
-      ? `<div class="create-bank-row">No screen time bank yet.<br/><button class="btn btn-blue btn-sm" onclick="createBank('${memberId}','screen_time')">+ Create Screen Time Bank</button></div>` : "",
+      ? `<div class="create-bank-row">No screen time bank yet.<br/><button class="btn btn-blue btn-sm" data-member-id="${esc(memberId)}" onclick="createBank(this.dataset.memberId,'screen_time')">+ Create Screen Time Bank</button></div>` : "",
   ].filter(Boolean).join("");
 
   return `
@@ -589,7 +590,7 @@ function renderAdminOverview() {
       tb ? `<span class="bank-pill screen_time">📱 ${fmtBalance(tb)}</span>` : `<span class="bank-pill empty">No screen time bank</span>`,
     ].join("");
     return `
-      <div class="member-card" onclick="viewMember('${m.id}')">
+      <div class="member-card" data-member-id="${esc(m.id)}" onclick="viewMember(this.dataset.memberId)">
         <div class="member-card-top">
           <div class="avatar" style="background:${mc(m.id)}">${initial(m.name)}</div>
           <div><div class="name">${esc(m.name)}</div><div class="role">${esc(m.role)}</div></div>

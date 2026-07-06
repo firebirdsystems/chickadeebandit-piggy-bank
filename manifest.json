@@ -34,6 +34,61 @@
     "allowance.earned",
     "reward.earned"
   ],
+  "automation_actions": {
+    "deposit": {
+      "title": "Deposit into a piggy bank",
+      "description": "Add money to a member's money piggy bank.",
+      "params": {
+        "member_id": { "type": "member", "label": "Whose bank", "required": true },
+        "amount_cents": { "type": "integer", "label": "Amount (cents)", "required": true, "min": 1 },
+        "note": { "type": "text", "label": "Note", "default": "Automation" }
+      },
+      "dedupe": { "table": "transactions", "column": "source_event_id" },
+      "steps": [
+        {
+          "op": "lookup",
+          "table": "piggy_banks",
+          "where": { "member_id": ":member_id", "type": "money" },
+          "bind": { "bank_id": "id" },
+          "on_missing": "skip"
+        },
+        {
+          "op": "insert",
+          "table": "transactions",
+          "values": {
+            "id": "$uuid",
+            "bank_id": ":bank_id",
+            "member_id": ":member_id",
+            "actor_id": "automation",
+            "amount": ":amount_cents",
+            "note": ":note",
+            "source": "automation",
+            "created_at": "$now",
+            "source_event_id": "$event_id"
+          }
+        },
+        {
+          "op": "increment",
+          "table": "piggy_banks",
+          "set": { "balance": ":amount_cents" },
+          "where": { "id": ":bank_id" }
+        }
+      ]
+    }
+  },
+  "suggested_automations": [
+    {
+      "title": "Deposit an allowance when a chore is completed",
+      "description": "Every completed chore adds a fixed amount to the member's money piggy bank.",
+      "trigger_event": "chore.completed",
+      "target_app_id": "piggy-bank",
+      "action_id": "deposit",
+      "param_map": {
+        "member_id": { "kind": "payload_field", "value": "member_id" },
+        "amount_cents": { "kind": "const", "value": 100 }
+      }
+    }
+  ],
   "exports": [
     "member-balances",
     "savings-goals"

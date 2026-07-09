@@ -1,0 +1,44 @@
+{
+  "scenarios": [
+    {
+      "name": "a child sees only their own piggy bank and transactions; an adult sees the whole family's, and a child cannot write",
+      "members": { "parent": "adult", "childA": "child", "childB": "child" },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, balance, created_at) VALUES ('pb_a', ?, 'A Savings', 'money', 500, '2026-01-01T00:00:00Z'), ('pb_b', ?, 'B Savings', 'money', 800, '2026-01-01T00:00:00Z')",
+          "params": ["{{childA}}", "{{childB}}"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES ('t_a', 'pb_a', ?, ?, 500, 'allowance', 'manual', '2026-01-02T00:00:00Z'), ('t_b', 'pb_b', ?, ?, 800, 'allowance', 'manual', '2026-01-02T00:00:00Z')",
+          "params": ["{{childA}}", "{{parent}}", "{{childB}}", "{{parent}}"]
+        },
+        {
+          "action": "db",
+          "as": "childA",
+          "sql": "SELECT id FROM app_piggy_bank__piggy_banks",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "id": "pb_a" }] }
+        },
+        {
+          "action": "db",
+          "as": "childA",
+          "sql": "SELECT id FROM app_piggy_bank__transactions",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "id": "t_a" }] }
+        },
+        {
+          "action": "db",
+          "as": "parent",
+          "sql": "SELECT id FROM app_piggy_bank__piggy_banks",
+          "expect": { "status": 200, "rowCount": 2 }
+        },
+        {
+          "action": "db",
+          "as": "childA",
+          "sql": "UPDATE app_piggy_bank__piggy_banks SET balance = 999999 WHERE id = 'pb_a'",
+          "expect": { "status": 403 }
+        }
+      ]
+    }
+  ]
+}

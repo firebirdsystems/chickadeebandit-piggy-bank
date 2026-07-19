@@ -1,8 +1,8 @@
 {
   "id": "piggy-bank",
   "name": "Piggy Bank",
-  "version": "1.1.0",
-  "description": "Per-member piggy banks for money, screen time, and savings goals. Adults manage everyone's banks; kids see their own balances and progress toward what they are working for. Automatically receives chore allowance deposits from the Chores app.",
+  "version": "1.2.0",
+  "description": "Per-member piggy banks for money, screen time, and savings goals. Adults manage everyone's banks; kids see their own balances and progress toward what they are working for. Automatically receives chore allowance deposits from the Chores app, and can debit a screen-time bank when a reward is redeemed.",
   "entrypoint": "index.html",
   "runtime": "static",
   "category": "family",
@@ -77,18 +77,69 @@
           "where": { "id": ":bank_id" }
         }
       ]
+    },
+    "withdraw": {
+      "title": "Withdraw from a screen-time piggy bank",
+      "description": "Subtract minutes from a member's screen-time piggy bank (e.g. when they spend banked time on a reward).",
+      "params": {
+        "member_id": { "type": "member", "label": "Whose bank", "required": true },
+        "amount": { "type": "integer", "label": "Minutes to spend", "required": true, "min": 1 },
+        "note": { "type": "text", "label": "Note", "default": "Automation" }
+      },
+      "dedupe": { "table": "transactions", "column": "source_event_id" },
+      "steps": [
+        {
+          "op": "lookup",
+          "table": "piggy_banks",
+          "where": { "member_id": ":member_id", "type": "screen_time" },
+          "bind": { "bank_id": "id" },
+          "on_missing": "skip"
+        },
+        {
+          "op": "insert",
+          "table": "transactions",
+          "values": {
+            "id": "$uuid",
+            "bank_id": ":bank_id",
+            "member_id": ":member_id",
+            "actor_id": "automation",
+            "amount": "-:amount",
+            "note": ":note",
+            "source": "automation",
+            "created_at": "$now",
+            "source_event_id": "$event_id"
+          }
+        },
+        {
+          "op": "increment",
+          "table": "piggy_banks",
+          "set": { "balance": "-:amount" },
+          "where": { "id": ":bank_id" }
+        }
+      ]
     }
   },
   "suggested_automations": [
     {
       "title": "Deposit an allowance when a chore is completed",
-      "description": "Every completed chore adds a fixed amount to the member's money piggy bank.",
+      "description": "Every completed chore deposits its point value (as cents) into the member's money piggy bank. Adjust the factor to set what a point is worth.",
       "trigger_event": "chore.completed",
       "target_app_id": "piggy-bank",
       "action_id": "deposit",
       "param_map": {
         "member_id": { "kind": "payload_field", "value": "member_id" },
-        "amount_cents": { "kind": "const", "value": 100 }
+        "amount_cents": { "kind": "scaled_field", "value": "points", "factor": 10 }
+      }
+    },
+    {
+      "title": "Spend screen time when a reward is redeemed",
+      "description": "When a reward is redeemed, subtract its point cost (as minutes) from the member's screen-time piggy bank. Adjust the factor to change the minutes-per-point rate.",
+      "trigger_event": "reward.redeemed",
+      "target_app_id": "piggy-bank",
+      "action_id": "withdraw",
+      "param_map": {
+        "member_id": { "kind": "payload_field", "value": "member_id" },
+        "amount": { "kind": "scaled_field", "value": "cost_points", "factor": 1 }
       }
     }
   ],

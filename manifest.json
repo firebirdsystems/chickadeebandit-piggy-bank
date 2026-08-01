@@ -25,6 +25,37 @@
     "requires_approval": false
   },
   "storage": "db",
+    "member_references": {
+      "piggy_banks": {
+        "column": "member_id",
+        "on_removed": "delete",
+        "dependent_tables": [
+          {
+            "table": "transactions",
+            "foreign_key": "bank_id"
+          }
+        ]
+      },
+      "transactions": [
+        {
+          "column": "member_id",
+          "on_removed": "delete"
+        },
+        {
+          "column": "actor_id",
+          "on_removed": "keep"
+        }
+      ],
+      "savings_goals": {
+        "column": "member_id",
+        "on_removed": "delete"
+      }
+    },
+  "delete_cascades": {
+    "piggy_banks": [
+      { "table": "transactions", "foreign_key": "bank_id" }
+    ]
+  },
   "row_policies": {
     "piggy_banks": { "kind": "adult_writable", "member_read_column": "member_id" },
     "savings_goals": { "kind": "adult_writable", "member_read_column": "member_id" },

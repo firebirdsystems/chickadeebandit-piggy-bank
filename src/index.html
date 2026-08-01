@@ -337,7 +337,9 @@ async function createBank(memberId, type) {
 async function deleteBank(bankId) {
   if (!isAdult(ME)) return;
   if (!await hubConfirm({ message: "Delete this bank?", description: "All transaction history will be permanently removed.", confirmLabel: "Delete bank", destructive: true })) return;
-  await db(`DELETE FROM app_piggy_bank__transactions WHERE bank_id = ?`, [bankId]);
+  // One statement: manifest delete_cascades removes the bank's transactions in
+  // the same transactional batch. Two separate calls could leave a bank whose
+  // ledger had already been deleted but whose balance row survived.
   await db(`DELETE FROM app_piggy_bank__piggy_banks WHERE id = ?`, [bankId]);
   delete transactions[bankId];
   await loadBanks();

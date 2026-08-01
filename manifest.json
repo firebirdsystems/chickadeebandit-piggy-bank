@@ -49,17 +49,38 @@
       "savings_goals": {
         "column": "member_id",
         "on_removed": "delete"
+      },
+      "bank_rollups": {
+        "column": "member_id",
+        "on_removed": "delete",
+        "id_column": "rowid"
       }
     },
   "delete_cascades": {
     "piggy_banks": [
-      { "table": "transactions", "foreign_key": "bank_id" }
+      { "table": "transactions", "foreign_key": "bank_id" },
+      { "table": "bank_rollups", "foreign_key": "bank_id" }
     ]
   },
   "row_policies": {
     "piggy_banks": { "kind": "adult_writable", "member_read_column": "member_id" },
     "savings_goals": { "kind": "adult_writable", "member_read_column": "member_id" },
-    "transactions": { "kind": "adult_writable", "member_read_column": "member_id" },
+    "transactions": {
+      "kind": "adult_writable",
+      "member_read_column": "member_id",
+      "retain_days": {
+        "default": 730,
+        "timestamp_column": "created_at",
+        "override_key": "transaction_history",
+        "fold": {
+          "into_table": "bank_rollups",
+          "key_columns": { "bank_id": "bank_id", "member_id": "member_id" },
+          "sum_columns": { "amount": "amount" },
+          "folded_through_column": "folded_through_at"
+        }
+      }
+    },
+    "bank_rollups": { "kind": "adult_writable", "member_read_column": "member_id" },
     "processed_events": {
       "kind": "adult_only",
       "retain_days": { "default": 90, "timestamp_column": "processed_at", "id_column": "event_id", "override_key": "event_dedup" }

@@ -16,9 +16,12 @@ const schema = readFileSync(join(__dirname, "../migrations/001_init.sql"), "utf-
 const client = readFileSync(join(__dirname, "../src/index.html"), "utf-8");
 
 describe("delete_cascades", () => {
-  it("declares the bank's transactions", () => {
+  it("declares the bank's transactions and its retention rollup row", () => {
     expect(manifest.delete_cascades).toEqual({
-      piggy_banks: [{ table: "transactions", foreign_key: "bank_id" }],
+      piggy_banks: [
+        { table: "transactions", foreign_key: "bank_id" },
+        { table: "bank_rollups", foreign_key: "bank_id" },
+      ],
     });
   });
 

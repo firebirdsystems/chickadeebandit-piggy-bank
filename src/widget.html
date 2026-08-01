@@ -120,14 +120,22 @@ async function loadMembers() {
 }
 
 async function load() {
-  const [members, { rows: banks }] = await Promise.all([
+  const [members, { rows: banks }, { rows: tailRows }, { rows: rollupRows }] = await Promise.all([
     loadMembers(),
-    dbq(`SELECT member_id, type, balance FROM app_piggy_bank__piggy_banks ORDER BY member_id, type`),
+    dbq(`SELECT id, member_id, type FROM app_piggy_bank__piggy_banks ORDER BY member_id, type`),
+    dbq(`SELECT bank_id, COALESCE(SUM(amount), 0) AS tail FROM app_piggy_bank__transactions GROUP BY bank_id`),
+    dbq(`SELECT bank_id, amount FROM app_piggy_bank__bank_rollups`),
   ]);
+
+  // Balance is derived (retention rollup + live transaction tail) — the stored
+  // piggy_banks.balance column is vestigial as of migration 005.
+  const tails   = new Map((tailRows ?? []).map(r => [r.bank_id, Number(r.tail ?? 0)]));
+  const rollups = new Map((rollupRows ?? []).map(r => [r.bank_id, Number(r.amount ?? 0)]));
 
   // Group banks by member
   const byMember = new Map();
   for (const b of banks) {
+    b.balance = (rollups.get(b.id) ?? 0) + (tails.get(b.id) ?? 0);
     if (!byMember.has(b.member_id)) byMember.set(b.member_id, []);
     byMember.get(b.member_id).push(b);
   }

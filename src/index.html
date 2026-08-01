@@ -222,6 +222,20 @@ async function loadBanks() {
     const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? ORDER BY type`, [ME.id]);
     banks = rows ?? [];
   }
+  // Balance is DERIVED: retention rollup + SUM of the live transaction tail,
+  // both aggregated in SQL. The stored piggy_banks.balance column (migrations
+  // ≤004) is no longer read or written — it could silently diverge from the
+  // ledger when the old insert+update pair failed in between, and it blocked
+  // retention on transactions (expiring rows would not have moved it, but
+  // nothing reconciled it either). The hub retention runner folds expiring
+  // transactions into bank_rollups inside the same transaction as their
+  // delete, so this derivation is stable across expiry.
+  const tails = new Map();
+  const { rows: tailRows } = await db(`SELECT bank_id, COALESCE(SUM(amount), 0) AS tail FROM app_piggy_bank__transactions GROUP BY bank_id`);
+  for (const row of tailRows ?? []) tails.set(row.bank_id, Number(row.tail ?? 0));
+  const { rows: rollupRows } = await db(`SELECT bank_id, amount FROM app_piggy_bank__bank_rollups`);
+  const rollups = new Map((rollupRows ?? []).map(r => [r.bank_id, Number(r.amount ?? 0)]));
+  for (const bank of banks) bank.balance = (rollups.get(bank.id) ?? 0) + (tails.get(bank.id) ?? 0);
 }
 
 async function loadGoals() {
@@ -298,12 +312,18 @@ async function processOneEvent(ev) {
     const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? AND type = 'money'`, [p.member_id]);
     if (rows.length) {
       const bank = rows[0];
-      await db(
-        `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [crypto.randomUUID(), bank.id, p.member_id, src, p.cents_earned, note, src, now, ev.id]
-      );
-      await db(`UPDATE app_piggy_bank__piggy_banks SET balance = balance + ? WHERE id = ?`, [p.cents_earned, bank.id]);
+      // Single statement; the partial UNIQUE index on source_event_id is the
+      // dedupe. The pre-read above only narrows the common case — two adult
+      // tabs can both find no row, and the second INSERT then fails here
+      // instead of double-crediting (the old shape also applied a separate
+      // balance UPDATE, which the loser still executed).
+      try {
+        await db(
+          `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [crypto.randomUUID(), bank.id, p.member_id, src, p.cents_earned, note, src, now, ev.id]
+        );
+      } catch { /* concurrent tab already credited this event */ }
     }
   }
 
@@ -312,12 +332,13 @@ async function processOneEvent(ev) {
     const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? AND type = 'screen_time'`, [p.member_id]);
     if (rows.length) {
       const bank = rows[0];
-      await db(
-        `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [crypto.randomUUID(), bank.id, p.member_id, src, p.minutes_earned, note, src, now, ev.id]
-      );
-      await db(`UPDATE app_piggy_bank__piggy_banks SET balance = balance + ? WHERE id = ?`, [p.minutes_earned, bank.id]);
+      try {
+        await db(
+          `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [crypto.randomUUID(), bank.id, p.member_id, src, p.minutes_earned, note, src, now, ev.id]
+        );
+      } catch { /* concurrent tab already credited this event */ }
     }
   }
 }
@@ -361,9 +382,10 @@ async function recordTransaction(bankId, amount, note, source = "manual") {
   render();
 
   // Persist to DB, then sync tx list to match server order/content
+  // One INSERT — the balance is derived from the ledger (see loadBanks), so
+  // there is no second statement to fail separately and diverge.
   await db(`INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [id, bankId, bank.member_id, ME.id, amount, note, source, now]);
-  await db(`UPDATE app_piggy_bank__piggy_banks SET balance = balance + ? WHERE id = ?`, [amount, bankId]);
   await loadTransactionsForBank(bankId);
   render();
 }

@@ -62,6 +62,18 @@
       { "table": "bank_rollups", "foreign_key": "bank_id" }
     ]
   },
+  "glance": {
+    "source": {
+      "kind": "sql",
+      "query": "SELECT printf('%.2f', COALESCE(SUM(balance), 0) / 100.0) AS value FROM app_piggy_bank__piggy_banks WHERE member_id = :me AND type = 'money' LIMIT 1"
+    },
+    "display": {
+      "template": "stat",
+      "value": "value",
+      "label": "saved up",
+      "empty_hides": true
+    }
+  },
   "row_policies": {
     "piggy_banks": { "kind": "adult_writable", "member_read_column": "member_id" },
     "savings_goals": { "kind": "adult_writable", "member_read_column": "member_id" },

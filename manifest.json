@@ -25,6 +25,12 @@
     "requires_approval": false
   },
   "storage": "db",
+  "preload": {
+    "piggy_banks": {"sql": "SELECT * FROM app_piggy_bank__piggy_banks ORDER BY member_id, type"},
+    "transactions": {"sql": "SELECT bank_id, COALESCE(SUM(amount), 0) AS tail FROM app_piggy_bank__transactions GROUP BY bank_id"},
+    "bank_rollups": {"sql": "SELECT bank_id, amount FROM app_piggy_bank__bank_rollups"},
+    "savings_goals": {"sql": "SELECT * FROM app_piggy_bank__savings_goals WHERE status = 'active' ORDER BY created_at"}
+  },
     "member_references": {
       "piggy_banks": {
         "column": "member_id",

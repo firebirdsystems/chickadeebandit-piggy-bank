@@ -80,6 +80,7 @@
       "empty_hides": true
     }
   },
+  "db_plaintext_columns": ["bank_type"],
   "row_policies": {
     "piggy_banks": { "kind": "adult_writable", "member_read_column": "member_id" },
     "savings_goals": { "kind": "adult_writable", "member_read_column": "member_id" },

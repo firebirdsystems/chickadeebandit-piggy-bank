@@ -1,0 +1,55 @@
+{
+  "scenarios": [
+    {
+      "name": "a child sees only their own bank and none of the adult controls over it",
+      "members": { "parent": "adult", "kid": "child" },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES ('ui-bank-kid', ?, ?, 'money', datetime('now'))",
+          "params": ["{{kid}}", "Pocket money"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES ('ui-bank-parent', ?, ?, 'money', datetime('now'))",
+          "params": ["{{parent}}", "Household float"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES ('ui-goal-kid', ?, 'money', ?, 2000, 'active', datetime('now'))",
+          "params": ["{{kid}}", "Skateboard"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES ('ui-tx-1', 'ui-bank-kid', ?, ?, 500, ?, 'manual', datetime('now'))",
+          "params": ["{{kid}}", "{{parent}}", "Allowance"]
+        },
+
+        { "action": "open", "as": "kid" },
+        { "action": "expectVisible", "as": "kid", "selector": "[data-testid=\"bank-card\"][data-bank-id=\"ui-bank-kid\"]" },
+        { "action": "expectVisible", "as": "kid", "selector": "[data-testid=\"goal-card\"][data-goal-id=\"ui-goal-kid\"]" },
+        { "action": "expectVisible", "as": "kid", "selector": "[data-testid=\"tx-row\"]" },
+        { "action": "expectCount", "as": "kid", "selector": "[data-testid=\"bank-card\"]", "count": 1 },
+        { "action": "expectCount", "as": "kid", "selector": "[data-testid=\"bank-add\"]", "count": 0 },
+        { "action": "expectCount", "as": "kid", "selector": "[data-testid=\"bank-subtract\"]", "count": 0 },
+        { "action": "expectCount", "as": "kid", "selector": "[data-testid=\"bank-delete\"]", "count": 0 },
+        { "action": "expectCount", "as": "kid", "selector": "[data-testid=\"goal-archive\"]", "count": 0 },
+        { "action": "expectCount", "as": "kid", "selector": "[data-testid=\"add-goal\"]", "count": 0 },
+        { "action": "expectCount", "as": "kid", "selector": "[data-testid=\"back-to-family\"]", "count": 0 },
+
+        { "action": "open", "as": "parent" },
+        { "action": "expectVisible", "as": "parent", "selector": "[data-testid=\"member-card\"][data-member-role=\"child\"]" },
+        { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"member-card\"]", "count": 2 },
+        { "action": "click", "as": "parent", "selector": "[data-testid=\"member-card\"][data-member-role=\"child\"]" },
+        { "action": "expectVisible", "as": "parent", "selector": "[data-testid=\"bank-card\"][data-bank-id=\"ui-bank-kid\"]" },
+        { "action": "expectVisible", "as": "parent", "selector": "[data-testid=\"goal-card\"][data-goal-id=\"ui-goal-kid\"]" },
+        { "action": "expectVisible", "as": "parent", "selector": "[data-testid=\"back-to-family\"]" },
+        { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"bank-add\"]", "count": 1 },
+        { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"bank-subtract\"]", "count": 1 },
+        { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"bank-delete\"]", "count": 1 },
+        { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"goal-archive\"]", "count": 1 },
+        { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"add-goal\"]", "count": 1 }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Piggy Bank
 
-A [Chickadee Bandit](http://chickadeebandit.com) app.
+A [Chickadee Bandit](https://chickadeebandit.com/app-library/piggy-bank) app.
 
 Per-member piggy banks for money and screen time. Adults manage everyone's banks; kids see only their own. Automatically receives weekly allowance deposits from the Chores app.
 

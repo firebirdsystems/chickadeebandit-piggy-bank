@@ -156,7 +156,8 @@
 
     .empty { text-align: center; padding: 36px 16px; color: var(--muted); font-size: 0.9rem; }
     .loading { text-align: center; padding: 40px; color: var(--muted); }
-    .processing-badge { font-size: 0.75rem; color: var(--accent); background: var(--accent-light); border-radius: 4px; padding: 2px 8px; margin-left: 8px; }
+    .automation-notice { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; background: var(--accent-light); color: var(--text); }
+    .automation-notice a { color: var(--accent); font-weight: 600; }
     .section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
   </style>
   <base href="/run/piggy-bank/" />
@@ -167,26 +168,24 @@
 </div>
 
 <script type="module">
-import { memberColor, initial, esc, isAdult, hubConfirm } from "/hub-sdk.js";
+import { memberColor, initial, esc, isAdult, hubConfirm, automationStatus } from "/hub-sdk.js";
 import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal } from "./logic.js";
 
 const CONTEXT    = window.__CONTEXT_URL ?? "";
 const DB         = window.__DB_URL      ?? "";
-const EVENTS_URL = window.__EVENTS_URL  ?? "/api/events";
 const ME         = window.__CURRENT_MEMBER ?? null;
-
-// Only credit allowance/reward events from apps we trust to mint balances. source_app_id
-// is set server-side from the publishing app's URL (a child can't spoof it), and the
-// trusted publisher (chores) requires the adult role to emit allowance.earned via
-// publish_acls. reward.earned remains supported for older Chores bundles.
-const TRUSTED_REWARD_SOURCES = ["chore-tracker"];
+const HUB_ORIGIN = window.__HUB_ORIGIN ?? "";
 
 let members          = [];
 let banks            = [];       // piggy banks relevant to current user
 let goals            = [];       // active savings goals relevant to current user
 let transactions     = {};       // bankId → last 10 rows
 let viewMemberId     = null;     // admin: which member detail is open
-let processingEvents = false;
+// Chores' weekly allowance arrives through two automations the hub runs by
+// itself (manifest `enable: "automatically"`), restricted to Chores as the
+// publisher. Only an admin can switch them off; when one is, admins are told
+// here rather than left wondering why deposits stopped.
+let allowanceOff     = [];       // titles of allowance automations switched off
 
 // ─── DB ───────────────────────────────────────────────────────────────────
 async function db(sql, params = []) {
@@ -260,88 +259,6 @@ async function loadAllTransactions() {
 
 // ─── Format helpers ───────────────────────────────────────────────────────
 function mc(id) { return memberColor(id, members); }
-
-// ─── Allowance event processing ───────────────────────────────────────────
-async function processAllowanceEvents() {
-  // Crediting writes to banks/transactions, which are adult-only (row policies).
-  // Only an adult's client processes reward events; the source_event_id dedup means
-  // a credit is applied exactly once, whenever an adult next opens the app.
-  if (!ME || !isAdult(ME)) return;
-  if (processingEvents) return;
-  processingEvents = true;
-  try {
-    // Only fetch events newer than the most recent one we've already imported.
-    const { rows: [lastRow] } = await db(
-      `SELECT MAX(created_at) as last_at FROM app_piggy_bank__transactions WHERE source_event_id IS NOT NULL`
-    );
-    const since = lastRow?.last_at;
-    const types = ["allowance.earned", "reward.earned"];
-    const batches = await Promise.all(types.map(async type => {
-      const url = `${EVENTS_URL}?type=${encodeURIComponent(type)}` +
-        (since ? `&since=${encodeURIComponent(since)}` : "");
-      const res = await fetch(url);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return Array.isArray(data) ? data : (data.events ?? []);
-    }));
-    const events = batches.flat();
-    await Promise.all(events.map(ev => processOneEvent(ev)));
-  } catch {} finally { processingEvents = false; }
-}
-
-async function processOneEvent(ev) {
-  // source_event_id on transactions is the correctness guard against duplicates
-  // (protects if the since cutoff is inclusive, or two tabs race)
-  const { rows: seen } = await db(
-    `SELECT 1 FROM app_piggy_bank__transactions WHERE source_event_id = ?`, [ev.id]
-  );
-  if (seen.length) return;
-
-  // Ignore reward events from any app we don't trust to mint allowance.
-  if (!TRUSTED_REWARD_SOURCES.includes(ev.source_app_id)) return;
-
-  const p = ev.payload ?? {};
-  if (!p.member_id) return;
-
-  const now  = new Date().toISOString();
-  const note = p.note || p.source_label || "Reward";
-  const src  = ev.source_app_id === "chore-tracker" ? "chores" : (ev.source_app_id ?? "unknown");
-
-  // Deposit money
-  if ((p.cents_earned ?? 0) > 0 && p.reward_type !== "screen_time") {
-    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? AND type = 'money'`, [p.member_id]);
-    if (rows.length) {
-      const bank = rows[0];
-      // Single statement; the partial UNIQUE index on source_event_id is the
-      // dedupe. The pre-read above only narrows the common case — two adult
-      // tabs can both find no row, and the second INSERT then fails here
-      // instead of double-crediting (the old shape also applied a separate
-      // balance UPDATE, which the loser still executed).
-      try {
-        await db(
-          `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [crypto.randomUUID(), bank.id, p.member_id, src, p.cents_earned, note, src, now, ev.id]
-        );
-      } catch { /* concurrent tab already credited this event */ }
-    }
-  }
-
-  // Deposit screen time
-  if ((p.minutes_earned ?? 0) > 0 && p.reward_type !== "money") {
-    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? AND type = 'screen_time'`, [p.member_id]);
-    if (rows.length) {
-      const bank = rows[0];
-      try {
-        await db(
-          `INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [crypto.randomUUID(), bank.id, p.member_id, src, p.minutes_earned, note, src, now, ev.id]
-        );
-      } catch { /* concurrent tab already credited this event */ }
-    }
-  }
-}
 
 // ─── Admin actions ────────────────────────────────────────────────────────
 async function createBank(memberId, type) {
@@ -633,12 +550,16 @@ function render() {
   if (!ME) { document.getElementById("root").innerHTML = `<div class="empty">Please log in.</div>`; return; }
 
   const meIsAdult = isAdult(ME);
-  const syncing   = processingEvents ? `<span class="processing-badge">syncing…</span>` : "";
+  const notice = allowanceOff.length > 0
+    ? `<div class="automation-notice" role="status">Chores allowance is not being deposited: ${esc(allowanceOff.join(" and "))} ${allowanceOff.length > 1 ? "are" : "is"} switched off.
+        ${HUB_ORIGIN ? `<a href="${esc(HUB_ORIGIN)}/settings/automations" target="_top">Turn back on in Settings → Automations</a>` : "An admin can turn it back on in Settings → Automations."}</div>`
+    : "";
 
   document.getElementById("root").innerHTML = `
     <header>
-      <div><h1>🐷 Piggy Bank${syncing}</h1><div class="sub">Savings &amp; screen time</div></div>
+      <div><h1>🐷 Piggy Bank</h1><div class="sub">Savings &amp; screen time</div></div>
     </header>
+    ${notice}
     <div id="main-content"></div>`;
 
   const main = document.getElementById("main-content");
@@ -667,15 +588,15 @@ window.createBank  = async (memberId, type) => { await createBank(memberId, type
     await loadBanks();
     await loadGoals();
     await loadAllTransactions();
-    // Process any pending chore allowance events
-    processAllowanceEvents().then(async () => {
-      await loadBanks();
-      await loadGoals();
-      await loadAllTransactions();
-      render();
-    }).catch(() => {});
   }
   render();
+  // Admins only: the hub answers nobody else, and only admins can turn it back on.
+  if (window.__IS_ADMIN) {
+    automationStatus().then((list) => {
+      allowanceOff = (list ?? []).filter((a) => a.automatic && a.state === "off").map((a) => a.title);
+      if (allowanceOff.length > 0) render();
+    }).catch(() => {});
+  }
 })();
 </script>
 </body>

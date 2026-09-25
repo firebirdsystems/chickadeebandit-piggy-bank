@@ -65,12 +65,43 @@ describe("derived balance", () => {
     expect(client).not.toMatch(/SET balance = balance \+ \?/);
   });
 
-  it("event credits are a single INSERT with the UNIQUE index as the race guard", () => {
-    // No separate balance UPDATE remains anywhere; the two credit paths catch
-    // the concurrent-duplicate INSERT failure instead of double-crediting.
-    const credits = client.match(/source_event_id\)\s*\n\s*VALUES/g) ?? [];
-    expect(credits.length).toBe(2);
-    expect(client).toMatch(/concurrent tab already credited this event/);
+  it("allowance credits are hub automations, not a client import", () => {
+    // The client used to import allowance.earned events itself, but only when
+    // an adult opened the app — events older than the hub's retention window
+    // were lost — and its resume cursor skipped events. The hub now runs the
+    // deposits on its own the moment Chores publishes.
+    expect(client).not.toMatch(/\/api\/events|__EVENTS_URL|allowance\.earned/);
+    expect(manifest.subscribes_to).toBeUndefined();
+    const automatic = manifest.suggested_automations.filter((s) => s.enable === "automatically");
+    expect(automatic.map((s) => [s.trigger_event, s.trigger_app_id, s.action_id])).toEqual([
+      ["allowance.earned", "chore-tracker", "deposit"],
+      ["allowance.earned", "chore-tracker", "deposit_minutes"],
+    ]);
+  });
+
+  it("no automation writes the stored balance column", () => {
+    for (const [id, action] of Object.entries(manifest.automation_actions)) {
+      expect(action.steps.map((step) => step.op), id).not.toContain("increment");
+    }
+  });
+
+  it("one event can credit both banks: each deposit has its own dedupe key", () => {
+    const { deposit, deposit_minutes } = manifest.automation_actions;
+    expect(deposit.dedupe.column).toBe("source_event_id");
+    expect(deposit_minutes.dedupe.column).toBe("screen_time_event_id");
+    const m007 = readFileSync(join(__dirname, "../migrations/007_screen_time_event_id.sql"), "utf-8");
+    expect(m007).toMatch(/UNIQUE INDEX IF NOT EXISTS app_piggy_bank__transactions_screen_time_event_uq/);
+  });
+
+  it("the glance derives the money balance, not the stored column", () => {
+    const query = manifest.glance.source.query;
+    expect(query).toMatch(/app_piggy_bank__bank_rollups/);
+    expect(query).toMatch(/SUM\(t\.amount\)/);
+    expect(query).toMatch(/LEFT JOIN app_piggy_bank__transactions t ON t\.bank_id = b\.id/);
+    // One rollup row per bank (PK bank_id, member_id), so MAX picks it without
+    // being multiplied by the transaction rows the join fans out to.
+    expect(query).toMatch(/MAX\(r\.amount\)/);
+    expect(query).not.toMatch(/SUM\(balance\)/);
   });
 
   it("the widget derives balances the same way", () => {

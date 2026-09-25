@@ -71,7 +71,7 @@
   "glance": {
     "source": {
       "kind": "sql",
-      "query": "SELECT printf('%.2f', COALESCE(SUM(balance), 0) / 100.0) AS value FROM app_piggy_bank__piggy_banks WHERE member_id = :me AND type = 'money' LIMIT 1"
+      "query": "SELECT printf('%.2f', (COALESCE(MAX(r.amount), 0) + COALESCE(SUM(t.amount), 0)) / 100.0) AS value FROM app_piggy_bank__piggy_banks b LEFT JOIN app_piggy_bank__bank_rollups r ON r.bank_id = b.id AND r.member_id = b.member_id LEFT JOIN app_piggy_bank__transactions t ON t.bank_id = b.id WHERE b.member_id = :me AND b.type = 'money' GROUP BY b.id LIMIT 1"
     },
     "display": {
       "template": "stat",
@@ -106,10 +106,6 @@
         "tier": "operational" }
     }
   },
-  "subscribes_to": [
-    "allowance.earned",
-    "reward.earned"
-  ],
   "automation_actions": {
     "deposit": {
       "title": "Deposit into a piggy bank",
@@ -142,12 +138,40 @@
             "created_at": "$now",
             "source_event_id": "$event_id"
           }
+        }
+      ]
+    },
+    "deposit_minutes": {
+      "title": "Bank screen time",
+      "description": "Add minutes to a member's screen-time piggy bank.",
+      "params": {
+        "member_id": { "type": "member", "label": "Whose bank", "required": true },
+        "minutes": { "type": "integer", "label": "Minutes", "required": true, "min": 1 },
+        "note": { "type": "text", "label": "Note", "default": "Automation" }
+      },
+      "dedupe": { "table": "transactions", "column": "screen_time_event_id" },
+      "steps": [
+        {
+          "op": "lookup",
+          "table": "piggy_banks",
+          "where": { "member_id": ":member_id", "type": "screen_time" },
+          "bind": { "bank_id": "id" },
+          "on_missing": "skip"
         },
         {
-          "op": "increment",
-          "table": "piggy_banks",
-          "set": { "balance": ":amount_cents" },
-          "where": { "id": ":bank_id" }
+          "op": "insert",
+          "table": "transactions",
+          "values": {
+            "id": "$uuid",
+            "bank_id": ":bank_id",
+            "member_id": ":member_id",
+            "actor_id": "automation",
+            "amount": ":minutes",
+            "note": ":note",
+            "source": "automation",
+            "created_at": "$now",
+            "screen_time_event_id": "$event_id"
+          }
         }
       ]
     },
@@ -182,26 +206,37 @@
             "created_at": "$now",
             "source_event_id": "$event_id"
           }
-        },
-        {
-          "op": "increment",
-          "table": "piggy_banks",
-          "set": { "balance": "-:amount" },
-          "where": { "id": ":bank_id" }
         }
       ]
     }
   },
   "suggested_automations": [
     {
-      "title": "Deposit an allowance when a chore is completed",
-      "description": "Every completed chore deposits its point value (as cents) into the member's money piggy bank. Adjust the factor to set what a point is worth.",
-      "trigger_event": "chore.completed",
+      "title": "Deposit the weekly chore allowance",
+      "description": "Each week's allowance from Chores lands in the member's money piggy bank.",
+      "trigger_event": "allowance.earned",
+      "trigger_app_id": "chore-tracker",
       "target_app_id": "piggy-bank",
       "action_id": "deposit",
+      "enable": "automatically",
       "param_map": {
         "member_id": { "kind": "payload_field", "value": "member_id" },
-        "amount_cents": { "kind": "scaled_field", "value": "points", "factor": 10 }
+        "amount_cents": { "kind": "payload_field", "value": "cents_earned" },
+        "note": { "kind": "payload_field", "value": "note" }
+      }
+    },
+    {
+      "title": "Bank the weekly screen time",
+      "description": "Each week's screen time earned in Chores lands in the member's screen-time piggy bank.",
+      "trigger_event": "allowance.earned",
+      "trigger_app_id": "chore-tracker",
+      "target_app_id": "piggy-bank",
+      "action_id": "deposit_minutes",
+      "enable": "automatically",
+      "param_map": {
+        "member_id": { "kind": "payload_field", "value": "member_id" },
+        "minutes": { "kind": "payload_field", "value": "minutes_earned" },
+        "note": { "kind": "payload_field", "value": "note" }
       }
     },
     {

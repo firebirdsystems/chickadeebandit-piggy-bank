@@ -251,10 +251,6 @@
       }
     }
   ],
-  "exports": [
-    "member-balances",
-    "savings-goals"
-  ],
   "nav": {
     "label": "Piggy Bank"
   },

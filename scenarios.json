@@ -39,6 +39,228 @@
           "expect": { "status": 403 }
         }
       ]
+    },
+    {
+      "name": "in a shared space a participant adult reads only their own banks, goals, transactions and rollups; only the steward reads everyone's",
+      "context": "shared_space",
+      "members": { "a": "adult", "b": "adult", "steward": "admin" },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, balance, created_at) VALUES ('bk-a', ?, 'A bank', 'money', 500, '2026-01-01T00:00:00Z'), ('bk-b', ?, 'B bank', 'money', 700, '2026-01-01T00:00:00Z')",
+          "params": ["{{a}}", "{{b}}"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES ('sg-a', ?, 'money', 'Bike', 3000, 'active', '2026-01-01T00:00:00Z'), ('sg-b', ?, 'money', 'Game', 6000, 'active', '2026-01-01T00:00:00Z')",
+          "params": ["{{a}}", "{{b}}"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES ('tx-a', 'bk-a', ?, ?, 500, '', 'manual', '2026-01-02T00:00:00Z'), ('tx-b', 'bk-b', ?, ?, 700, '', 'manual', '2026-01-02T00:00:00Z')",
+          "params": ["{{a}}", "{{steward}}", "{{b}}", "{{steward}}"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__bank_rollups (bank_id, member_id, amount, folded_through_at) VALUES ('bk-a', ?, 100, '2025-01-01T00:00:00Z'), ('bk-b', ?, 200, '2025-01-01T00:00:00Z')",
+          "params": ["{{a}}", "{{b}}"]
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "SELECT id FROM app_piggy_bank__piggy_banks ORDER BY id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "id": "bk-a" }] }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "SELECT id FROM app_piggy_bank__savings_goals ORDER BY id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "id": "sg-a" }] }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "SELECT id FROM app_piggy_bank__transactions ORDER BY id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "id": "tx-a" }] }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "SELECT bank_id FROM app_piggy_bank__bank_rollups ORDER BY bank_id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "bank_id": "bk-a" }] }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "SELECT id FROM app_piggy_bank__piggy_banks ORDER BY id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 2 }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "SELECT id FROM app_piggy_bank__savings_goals ORDER BY id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 2 }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "SELECT id FROM app_piggy_bank__transactions ORDER BY id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 2 }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "SELECT bank_id FROM app_piggy_bank__bank_rollups ORDER BY bank_id",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 2 }
+        }
+      ]
+    },
+    {
+      "name": "in a household a plain adult reads every member's banks and rollups",
+      "members": { "a": "adult", "b": "adult" },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, balance, created_at) VALUES ('bk-b', ?, 'B bank', 'money', 700, '2026-01-01T00:00:00Z')",
+          "params": ["{{b}}"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__bank_rollups (bank_id, member_id, amount, folded_through_at) VALUES ('bk-b', ?, 200, '2025-01-01T00:00:00Z')",
+          "params": ["{{b}}"]
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "SELECT id FROM app_piggy_bank__piggy_banks",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "id": "bk-b" }] }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "SELECT bank_id, amount FROM app_piggy_bank__bank_rollups",
+          "params": [],
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "bank_id": "bk-b", "amount": 200 }] }
+        }
+      ]
+    },
+    {
+      "name": "in a shared space a participant adult cannot change, remove or open a bank for another member, only their own",
+      "context": "shared_space",
+      "members": { "a": "adult", "b": "adult", "steward": "admin" },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, balance, created_at) VALUES (?, ?, ?, ?, ?)",
+          "params": ["pb-b", "{{b}}", "B's bank", 500, "2026-01-01T00:00:00Z"]
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "UPDATE app_piggy_bank__piggy_banks SET balance = 0 WHERE id = ?",
+          "params": ["pb-b"],
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "DELETE FROM app_piggy_bank__piggy_banks WHERE id = ?",
+          "params": ["pb-b"],
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "SELECT id, balance FROM app_piggy_bank__piggy_banks WHERE id = 'pb-b'",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "balance": 500 }] }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, balance, created_at) VALUES (?, ?, ?, ?, ?)",
+          "params": ["pb-x", "{{b}}", "Planted", 0, "2026-01-01T00:00:00Z"],
+          "expect": { "status": 403, "errorIncludes": "only create rows for yourself" }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, balance, created_at) VALUES (?, ?, ?, ?, ?)",
+          "params": ["pb-a", "{{a}}", "A's bank", 10, "2026-01-01T00:00:00Z"],
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "UPDATE app_piggy_bank__piggy_banks SET balance = 20 WHERE id = ?",
+          "params": ["pb-a"],
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "SELECT id, balance FROM app_piggy_bank__piggy_banks ORDER BY id",
+          "expect": {
+            "status": 200,
+            "rowCount": 2,
+            "rowsContain": [{ "id": "pb-a", "balance": 20 }, { "id": "pb-b", "balance": 500 }]
+          }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "UPDATE app_piggy_bank__piggy_banks SET balance = 450 WHERE id = ?",
+          "params": ["pb-b"],
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "b",
+          "sql": "SELECT balance FROM app_piggy_bank__piggy_banks",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "balance": 450 }] }
+        }
+      ]
+    },
+    {
+      "name": "in a shared space a participant adult cannot hand their own bank to another member",
+      "context": "shared_space",
+      "members": { "a": "adult", "b": "adult", "steward": "admin" },
+      "steps": [
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, balance, created_at) VALUES (?, ?, ?, ?, ?)",
+          "params": ["pb-a", "{{a}}", "A's bank", 10, "2026-01-01T00:00:00Z"],
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "a",
+          "sql": "UPDATE app_piggy_bank__piggy_banks SET member_id = ?, name = ? WHERE id = ?",
+          "params": ["{{b}}", "Planted", "pb-a"],
+          "expect": { "status": 403, "errorIncludes": "may only keep rows as your own" }
+        },
+        {
+          "action": "db",
+          "as": "b",
+          "sql": "SELECT id FROM app_piggy_bank__piggy_banks",
+          "expect": { "status": 200, "rowCount": 0 }
+        },
+        {
+          "action": "db",
+          "as": "steward",
+          "sql": "SELECT member_id, name FROM app_piggy_bank__piggy_banks",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "member_id": "scn-a", "name": "A's bank" }] }
+        }
+      ]
     }
   ]
 }

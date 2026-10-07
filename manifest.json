@@ -249,6 +249,29 @@
         "member_id": { "kind": "payload_field", "value": "member_id" },
         "amount": { "kind": "scaled_field", "value": "cost_points", "factor": 1 }
       }
+    },
+    {
+      "title": "Bank verified practice as screen time",
+      "description": "Each practice session a parent verifies in Practice Log adds its minutes to the member's screen-time piggy bank, a minute for a minute. Adjust the factor to change the rate.",
+      "trigger_event": "practice-log.session_verified",
+      "trigger_app_id": "practice-log",
+      "target_app_id": "piggy-bank",
+      "action_id": "deposit_minutes",
+      "param_map": {
+        "member_id": {
+          "kind": "payload_field",
+          "value": "member_id"
+        },
+        "minutes": {
+          "kind": "scaled_field",
+          "value": "minutes",
+          "factor": 1
+        },
+        "note": {
+          "kind": "const",
+          "value": "Verified practice"
+        }
+      }
     }
   ],
   "nav": {

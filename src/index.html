@@ -168,7 +168,7 @@
 </div>
 
 <script type="module">
-import { memberColor, initial, esc, isAdult, hubConfirm, automationStatus } from "/hub-sdk.js";
+import { memberColor, initial, esc, isAdult, hubConfirm, automationStatus, glyph } from "/hub-sdk.js";
 import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal } from "./logic.js";
 
 const CONTEXT    = window.__CONTEXT_URL ?? "";
@@ -351,7 +351,7 @@ function openTransactionModal(bank, isDeposit) {
   const unit    = isMoney ? "dollars" : "minutes";
 
   openModal(`
-    <h3>${isDeposit ? "➕" : "➖"} ${label} ${isMoney ? "Money" : "Screen Time"}</h3>
+    <h3>${glyph(isDeposit ? "plus" : "minus")} ${label} ${isMoney ? "Money" : "Screen Time"}</h3>
     <div style="font-size:.88rem;color:var(--muted);margin-bottom:16px">
       For <strong>${esc(member?.name ?? "?")}</strong> · Current balance: <strong>${fmtBalance(bank)}</strong>
     </div>
@@ -379,7 +379,7 @@ function openGoalModal(bank) {
   const member  = members.find(m => m.id === bank.member_id);
   const isMoney = bank.type === "money";
   openModal(`
-    <h3>🎯 Add Goal</h3>
+    <h3>${glyph("goal-ring")} Add Goal</h3>
     <div style="font-size:.88rem;color:var(--muted);margin-bottom:16px">
       For <strong>${esc(member?.name ?? "?")}</strong> · ${isMoney ? "Money" : "Screen Time"}
     </div>
@@ -474,7 +474,7 @@ function renderBankCard(bank, canManage) {
   return `
     <div class="bank-card" data-testid="bank-card" data-bank-id="${esc(bank.id)}" data-bank-type="${esc(bank.type)}">
       <div class="bank-card-header">
-        <div class="bank-type-label">${isMoney ? "💰 Money" : "📱 Screen Time"}</div>
+        <div class="bank-type-label">${isMoney ? `${glyph("coins")} Money` : `${glyph("hourglass")} Screen Time`}</div>
         <div class="bank-balance ${bank.type}">${fmtBalance(bank)}</div>
       </div>
       ${goalHtml}
@@ -527,8 +527,8 @@ function renderAdminOverview() {
     const mb   = banks.find(b => b.member_id === m.id && b.type === "money");
     const tb   = banks.find(b => b.member_id === m.id && b.type === "screen_time");
     const pills = [
-      mb ? `<span class="bank-pill money">💰 ${fmtBalance(mb)}</span>` : `<span class="bank-pill empty">No money bank</span>`,
-      tb ? `<span class="bank-pill screen_time">📱 ${fmtBalance(tb)}</span>` : `<span class="bank-pill empty">No screen time bank</span>`,
+      mb ? `<span class="bank-pill money">${glyph("coins")} ${fmtBalance(mb)}</span>` : `<span class="bank-pill empty">No money bank</span>`,
+      tb ? `<span class="bank-pill screen_time">${glyph("hourglass")} ${fmtBalance(tb)}</span>` : `<span class="bank-pill empty">No screen time bank</span>`,
     ].join("");
     return `
       <div class="member-card" data-member-id="${esc(m.id)}" onclick="viewMember(this.dataset.memberId)" data-testid="member-card" data-member-role="${esc(m.role)}">
@@ -557,7 +557,7 @@ function render() {
 
   document.getElementById("root").innerHTML = `
     <header>
-      <div><h1>🐷 Piggy Bank</h1><div class="sub">Savings &amp; screen time</div></div>
+      <div><h1>${glyph("piggy")} Piggy Bank</h1><div class="sub">Savings &amp; screen time</div></div>
     </header>
     ${notice}
     <div id="main-content"></div>`;

@@ -1,0 +1,2351 @@
+{
+  "seed": [
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+0 minutes'))",
+      "params": [
+        "perf-bank-child-money",
+        "{{child}}",
+        "Rowan's piggy bank",
+        "money"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-001",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-001"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','-60 minutes'))",
+      "params": [
+        "perf-tx-002",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{me}}",
+        -335,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-12 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-003",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-002"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-17 days','-20 minutes'))",
+      "params": [
+        "perf-tx-004",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        690,
+        "Tooth fairy",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-22 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-005",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-003"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-27 days','-60 minutes'))",
+      "params": [
+        "perf-tx-006",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{me}}",
+        -675,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-32 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-007",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-004"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-37 days','-20 minutes'))",
+      "params": [
+        "perf-tx-008",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        310,
+        "Lemonade stand",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-42 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-009",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-005"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-47 days','-60 minutes'))",
+      "params": [
+        "perf-tx-010",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        -415,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-52 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-011",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-006"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-57 days','-20 minutes'))",
+      "params": [
+        "perf-tx-012",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        830,
+        "Good report card bonus",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-62 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-013",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-007"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-67 days','-60 minutes'))",
+      "params": [
+        "perf-tx-014",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{me}}",
+        -755,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-72 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-015",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-008"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-77 days','-20 minutes'))",
+      "params": [
+        "perf-tx-016",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        450,
+        "Tooth fairy",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-82 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-017",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-009"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-87 days','-60 minutes'))",
+      "params": [
+        "perf-tx-018",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{me}}",
+        -495,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-92 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-019",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-010"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-97 days','-20 minutes'))",
+      "params": [
+        "perf-tx-020",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        970,
+        "Lemonade stand",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-102 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-021",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-011"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-107 days','-60 minutes'))",
+      "params": [
+        "perf-tx-022",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        -835,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-112 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-023",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-012"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-117 days','-20 minutes'))",
+      "params": [
+        "perf-tx-024",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        590,
+        "Good report card bonus",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-122 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-025",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-013"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-127 days','-60 minutes'))",
+      "params": [
+        "perf-tx-026",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{me}}",
+        -575,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-132 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-027",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-014"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-137 days','-20 minutes'))",
+      "params": [
+        "perf-tx-028",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        1110,
+        "Tooth fairy",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-142 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-029",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-015"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-147 days','-60 minutes'))",
+      "params": [
+        "perf-tx-030",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{me}}",
+        -315,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-152 days','-0 minutes'), ?)",
+      "params": [
+        "perf-tx-031",
+        "perf-bank-child-money",
+        "{{child}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-016"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-157 days','-20 minutes'))",
+      "params": [
+        "perf-tx-032",
+        "perf-bank-child-money",
+        "{{child}}",
+        "{{partner}}",
+        730,
+        "Lemonade stand",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+1 minutes'))",
+      "params": [
+        "perf-bank-child-time",
+        "{{child}}",
+        "Rowan's screen time",
+        "screen_time"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-033",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-017"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-9 days','-71 minutes'))",
+      "params": [
+        "perf-tx-034",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{me}}",
+        -45,
+        "Video game night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-15 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-035",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-018"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-21 days','-25 minutes'))",
+      "params": [
+        "perf-tx-036",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-27 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-037",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-019"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-33 days','-71 minutes'))",
+      "params": [
+        "perf-tx-038",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{me}}",
+        -45,
+        "Saturday cartoons",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-39 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-039",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-020"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-45 days','-25 minutes'))",
+      "params": [
+        "perf-tx-040",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-51 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-041",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-021"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-57 days','-71 minutes'))",
+      "params": [
+        "perf-tx-042",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        -45,
+        "Extra episode",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-63 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-043",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-022"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-69 days','-25 minutes'))",
+      "params": [
+        "perf-tx-044",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-75 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-045",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-023"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-81 days','-71 minutes'))",
+      "params": [
+        "perf-tx-046",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{me}}",
+        -45,
+        "Movie night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-87 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-047",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-024"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-93 days','-25 minutes'))",
+      "params": [
+        "perf-tx-048",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-99 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-049",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-025"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-105 days','-71 minutes'))",
+      "params": [
+        "perf-tx-050",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{me}}",
+        -45,
+        "Tablet on the car ride",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-111 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-051",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-026"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-117 days','-25 minutes'))",
+      "params": [
+        "perf-tx-052",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-123 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-053",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-027"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-129 days','-71 minutes'))",
+      "params": [
+        "perf-tx-054",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        -45,
+        "Video game night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-135 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-055",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-028"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-141 days','-25 minutes'))",
+      "params": [
+        "perf-tx-056",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-147 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-057",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-029"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-153 days','-71 minutes'))",
+      "params": [
+        "perf-tx-058",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{me}}",
+        -45,
+        "Saturday cartoons",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-159 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-059",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-030"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-165 days','-25 minutes'))",
+      "params": [
+        "perf-tx-060",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-171 days','-7 minutes'), ?)",
+      "params": [
+        "perf-tx-061",
+        "perf-bank-child-time",
+        "{{child}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-031"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-177 days','-71 minutes'))",
+      "params": [
+        "perf-tx-062",
+        "perf-bank-child-time",
+        "{{child}}",
+        "{{me}}",
+        -45,
+        "Extra episode",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+2 minutes'))",
+      "params": [
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "Juniper's piggy bank",
+        "money"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-4 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-063",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-032"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-10 days','-82 minutes'))",
+      "params": [
+        "perf-tx-064",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{me}}",
+        -335,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-16 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-065",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-033"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-22 days','-30 minutes'))",
+      "params": [
+        "perf-tx-066",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        690,
+        "Tooth fairy",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-28 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-067",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-034"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-34 days','-82 minutes'))",
+      "params": [
+        "perf-tx-068",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{me}}",
+        -675,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-40 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-069",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-035"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-46 days','-30 minutes'))",
+      "params": [
+        "perf-tx-070",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        310,
+        "Lemonade stand",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-52 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-071",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-036"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-58 days','-82 minutes'))",
+      "params": [
+        "perf-tx-072",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        -415,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-64 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-073",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-037"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-70 days','-30 minutes'))",
+      "params": [
+        "perf-tx-074",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        830,
+        "Good report card bonus",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-76 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-075",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-038"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-82 days','-82 minutes'))",
+      "params": [
+        "perf-tx-076",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{me}}",
+        -755,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-88 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-077",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-039"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-94 days','-30 minutes'))",
+      "params": [
+        "perf-tx-078",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        450,
+        "Tooth fairy",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-100 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-079",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-040"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-106 days','-82 minutes'))",
+      "params": [
+        "perf-tx-080",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{me}}",
+        -495,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-112 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-081",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-041"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-118 days','-30 minutes'))",
+      "params": [
+        "perf-tx-082",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        970,
+        "Lemonade stand",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-124 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-083",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-042"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-130 days','-82 minutes'))",
+      "params": [
+        "perf-tx-084",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        -835,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-136 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-085",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-043"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-142 days','-30 minutes'))",
+      "params": [
+        "perf-tx-086",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        590,
+        "Good report card bonus",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-148 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-087",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-044"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-154 days','-82 minutes'))",
+      "params": [
+        "perf-tx-088",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{me}}",
+        -575,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-160 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-089",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-045"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-166 days','-30 minutes'))",
+      "params": [
+        "perf-tx-090",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{partner}}",
+        1110,
+        "Tooth fairy",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-172 days','-14 minutes'), ?)",
+      "params": [
+        "perf-tx-091",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-046"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-178 days','-82 minutes'))",
+      "params": [
+        "perf-tx-092",
+        "perf-bank-child2-money",
+        "{{child2}}",
+        "{{me}}",
+        -315,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+3 minutes'))",
+      "params": [
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "Juniper's screen time",
+        "screen_time"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-093",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-047"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','-93 minutes'))",
+      "params": [
+        "perf-tx-094",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{me}}",
+        -45,
+        "Video game night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-14 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-095",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-048"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-20 days','-35 minutes'))",
+      "params": [
+        "perf-tx-096",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-26 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-097",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-049"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-32 days','-93 minutes'))",
+      "params": [
+        "perf-tx-098",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{me}}",
+        -45,
+        "Saturday cartoons",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-38 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-099",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-050"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-44 days','-35 minutes'))",
+      "params": [
+        "perf-tx-100",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-101",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-051"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-56 days','-93 minutes'))",
+      "params": [
+        "perf-tx-102",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        -45,
+        "Extra episode",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-62 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-103",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-052"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-68 days','-35 minutes'))",
+      "params": [
+        "perf-tx-104",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-74 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-105",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-053"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-80 days','-93 minutes'))",
+      "params": [
+        "perf-tx-106",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{me}}",
+        -45,
+        "Movie night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-86 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-107",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-054"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-92 days','-35 minutes'))",
+      "params": [
+        "perf-tx-108",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-98 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-109",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-055"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-104 days','-93 minutes'))",
+      "params": [
+        "perf-tx-110",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{me}}",
+        -45,
+        "Tablet on the car ride",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-110 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-111",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-056"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-116 days','-35 minutes'))",
+      "params": [
+        "perf-tx-112",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-122 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-113",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-057"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-128 days','-93 minutes'))",
+      "params": [
+        "perf-tx-114",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        -45,
+        "Video game night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-134 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-115",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-058"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-140 days','-35 minutes'))",
+      "params": [
+        "perf-tx-116",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-146 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-117",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-059"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-152 days','-93 minutes'))",
+      "params": [
+        "perf-tx-118",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{me}}",
+        -45,
+        "Saturday cartoons",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-158 days','-21 minutes'), ?)",
+      "params": [
+        "perf-tx-119",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-060"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-164 days','-35 minutes'))",
+      "params": [
+        "perf-tx-120",
+        "perf-bank-child2-time",
+        "{{child2}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+4 minutes'))",
+      "params": [
+        "perf-bank-me-money",
+        "{{me}}",
+        "Fun money",
+        "money"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','-28 minutes'), ?)",
+      "params": [
+        "perf-tx-121",
+        "perf-bank-me-money",
+        "{{me}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-061"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-18 days','-104 minutes'))",
+      "params": [
+        "perf-tx-122",
+        "perf-bank-me-money",
+        "{{me}}",
+        "{{me}}",
+        -335,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-33 days','-28 minutes'), ?)",
+      "params": [
+        "perf-tx-123",
+        "perf-bank-me-money",
+        "{{me}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-062"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-48 days','-40 minutes'))",
+      "params": [
+        "perf-tx-124",
+        "perf-bank-me-money",
+        "{{me}}",
+        "{{partner}}",
+        690,
+        "Tooth fairy",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-63 days','-28 minutes'), ?)",
+      "params": [
+        "perf-tx-125",
+        "perf-bank-me-money",
+        "{{me}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-063"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-78 days','-104 minutes'))",
+      "params": [
+        "perf-tx-126",
+        "perf-bank-me-money",
+        "{{me}}",
+        "{{me}}",
+        -675,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-93 days','-28 minutes'), ?)",
+      "params": [
+        "perf-tx-127",
+        "perf-bank-me-money",
+        "{{me}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-064"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-108 days','-40 minutes'))",
+      "params": [
+        "perf-tx-128",
+        "perf-bank-me-money",
+        "{{me}}",
+        "{{partner}}",
+        310,
+        "Lemonade stand",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-123 days','-28 minutes'), ?)",
+      "params": [
+        "perf-tx-129",
+        "perf-bank-me-money",
+        "{{me}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-065"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-138 days','-104 minutes'))",
+      "params": [
+        "perf-tx-130",
+        "perf-bank-me-money",
+        "{{me}}",
+        "{{partner}}",
+        -415,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-153 days','-28 minutes'), ?)",
+      "params": [
+        "perf-tx-131",
+        "perf-bank-me-money",
+        "{{me}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-066"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-168 days','-40 minutes'))",
+      "params": [
+        "perf-tx-132",
+        "perf-bank-me-money",
+        "{{me}}",
+        "{{partner}}",
+        830,
+        "Good report card bonus",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+5 minutes'))",
+      "params": [
+        "perf-bank-me-time",
+        "{{me}}",
+        "Screen time",
+        "screen_time"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-4 days','-35 minutes'), ?)",
+      "params": [
+        "perf-tx-133",
+        "perf-bank-me-time",
+        "{{me}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-067"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-35 days','-115 minutes'))",
+      "params": [
+        "perf-tx-134",
+        "perf-bank-me-time",
+        "{{me}}",
+        "{{me}}",
+        -45,
+        "Video game night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-66 days','-35 minutes'), ?)",
+      "params": [
+        "perf-tx-135",
+        "perf-bank-me-time",
+        "{{me}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-068"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-97 days','-45 minutes'))",
+      "params": [
+        "perf-tx-136",
+        "perf-bank-me-time",
+        "{{me}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-128 days','-35 minutes'), ?)",
+      "params": [
+        "perf-tx-137",
+        "perf-bank-me-time",
+        "{{me}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-069"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-159 days','-115 minutes'))",
+      "params": [
+        "perf-tx-138",
+        "perf-bank-me-time",
+        "{{me}}",
+        "{{me}}",
+        -45,
+        "Saturday cartoons",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+6 minutes'))",
+      "params": [
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "Fun money",
+        "money"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','-42 minutes'), ?)",
+      "params": [
+        "perf-tx-139",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-070"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-17 days','-126 minutes'))",
+      "params": [
+        "perf-tx-140",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "{{me}}",
+        -335,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-32 days','-42 minutes'), ?)",
+      "params": [
+        "perf-tx-141",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-071"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-47 days','-50 minutes'))",
+      "params": [
+        "perf-tx-142",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "{{partner}}",
+        690,
+        "Tooth fairy",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-62 days','-42 minutes'), ?)",
+      "params": [
+        "perf-tx-143",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-072"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-77 days','-126 minutes'))",
+      "params": [
+        "perf-tx-144",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "{{me}}",
+        -675,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-92 days','-42 minutes'), ?)",
+      "params": [
+        "perf-tx-145",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-073"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-107 days','-50 minutes'))",
+      "params": [
+        "perf-tx-146",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "{{partner}}",
+        310,
+        "Lemonade stand",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-122 days','-42 minutes'), ?)",
+      "params": [
+        "perf-tx-147",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-074"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-137 days','-126 minutes'))",
+      "params": [
+        "perf-tx-148",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "{{partner}}",
+        -415,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-152 days','-42 minutes'), ?)",
+      "params": [
+        "perf-tx-149",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-075"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-167 days','-50 minutes'))",
+      "params": [
+        "perf-tx-150",
+        "perf-bank-partner-money",
+        "{{partner}}",
+        "{{partner}}",
+        830,
+        "Good report card bonus",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+7 minutes'))",
+      "params": [
+        "perf-bank-partner-time",
+        "{{partner}}",
+        "Screen time",
+        "screen_time"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','-49 minutes'), ?)",
+      "params": [
+        "perf-tx-151",
+        "perf-bank-partner-time",
+        "{{partner}}",
+        "automation",
+        60,
+        "Screen time earned",
+        "automation",
+        "perf-evt-076"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-41 days','-137 minutes'))",
+      "params": [
+        "perf-tx-152",
+        "perf-bank-partner-time",
+        "{{partner}}",
+        "{{me}}",
+        -45,
+        "Video game night",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-79 days','-49 minutes'), ?)",
+      "params": [
+        "perf-tx-153",
+        "perf-bank-partner-time",
+        "{{partner}}",
+        "automation",
+        90,
+        "Screen time earned",
+        "automation",
+        "perf-evt-077"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-117 days','-55 minutes'))",
+      "params": [
+        "perf-tx-154",
+        "perf-bank-partner-time",
+        "{{partner}}",
+        "{{partner}}",
+        20,
+        "Bonus for reading",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-155 days','-49 minutes'), ?)",
+      "params": [
+        "perf-tx-155",
+        "perf-bank-partner-time",
+        "{{partner}}",
+        "automation",
+        75,
+        "Screen time earned",
+        "automation",
+        "perf-evt-078"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days','+8 minutes'))",
+      "params": [
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "Pocket money",
+        "money"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-4 days','-56 minutes'), ?)",
+      "params": [
+        "perf-tx-156",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-079"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-27 days','-148 minutes'))",
+      "params": [
+        "perf-tx-157",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "{{me}}",
+        -335,
+        "Ice cream",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days','-56 minutes'), ?)",
+      "params": [
+        "perf-tx-158",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "automation",
+        800,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-080"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-73 days','-60 minutes'))",
+      "params": [
+        "perf-tx-159",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "{{partner}}",
+        690,
+        "Tooth fairy",
+        "chores"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-96 days','-56 minutes'), ?)",
+      "params": [
+        "perf-tx-160",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "automation",
+        650,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-081"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-119 days','-148 minutes'))",
+      "params": [
+        "perf-tx-161",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "{{me}}",
+        -675,
+        "Sticker pack",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at, source_event_id) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-142 days','-56 minutes'), ?)",
+      "params": [
+        "perf-tx-162",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "automation",
+        500,
+        "Weekly allowance",
+        "automation",
+        "perf-evt-082"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-165 days','-60 minutes'))",
+      "params": [
+        "perf-tx-163",
+        "perf-bank-adult2-money",
+        "{{adult2}}",
+        "{{partner}}",
+        310,
+        "Lemonade stand",
+        "manual"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__bank_rollups (bank_id, member_id, amount, folded_through_at) VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days'))",
+      "params": [
+        "perf-bank-child-money",
+        "{{child}}",
+        4250
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__bank_rollups (bank_id, member_id, amount, folded_through_at) VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days'))",
+      "params": [
+        "perf-bank-child2-money",
+        "{{child2}}",
+        1800
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__bank_rollups (bank_id, member_id, amount, folded_through_at) VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-200 days'))",
+      "params": [
+        "perf-bank-child-time",
+        "{{child}}",
+        120
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-60 days','-0 minutes'))",
+      "params": [
+        "perf-goal-01",
+        "{{child}}",
+        "money",
+        "Skateboard",
+        6000,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-20 days','-1 minutes'))",
+      "params": [
+        "perf-goal-02",
+        "{{child}}",
+        "money",
+        "Lego space station",
+        12000,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-15 days','-2 minutes'))",
+      "params": [
+        "perf-goal-03",
+        "{{child}}",
+        "screen_time",
+        "Movie marathon",
+        300,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-45 days','-3 minutes'))",
+      "params": [
+        "perf-goal-04",
+        "{{child2}}",
+        "money",
+        "Stuffed dragon",
+        2500,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-10 days','-4 minutes'))",
+      "params": [
+        "perf-goal-05",
+        "{{child2}}",
+        "money",
+        "Roller skates",
+        4500,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','-5 minutes'))",
+      "params": [
+        "perf-goal-06",
+        "{{child2}}",
+        "screen_time",
+        "Game day",
+        180,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days','-6 minutes'))",
+      "params": [
+        "perf-goal-07",
+        "{{me}}",
+        "money",
+        "New headphones",
+        15000,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-35 days','-7 minutes'))",
+      "params": [
+        "perf-goal-08",
+        "{{partner}}",
+        "money",
+        "Concert tickets",
+        18000,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-25 days','-8 minutes'))",
+      "params": [
+        "perf-goal-09",
+        "{{adult2}}",
+        "money",
+        "Hiking boots",
+        9000,
+        "active"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-120 days','-9 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-90 days'))",
+      "params": [
+        "perf-goal-10",
+        "{{child}}",
+        "money",
+        "Soccer ball",
+        2000,
+        "completed"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-100 days','-10 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-70 days'))",
+      "params": [
+        "perf-goal-11",
+        "{{child2}}",
+        "money",
+        "Art set",
+        1500,
+        "completed"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-80 days','-11 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days'))",
+      "params": [
+        "perf-goal-12",
+        "{{child}}",
+        "screen_time",
+        "Sleepover gaming",
+        240,
+        "completed"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days'))",
+      "params": [
+        "perf-evt-001"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-14 days'))",
+      "params": [
+        "perf-evt-002"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-20 days'))",
+      "params": [
+        "perf-evt-003"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-26 days'))",
+      "params": [
+        "perf-evt-004"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-32 days'))",
+      "params": [
+        "perf-evt-005"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-38 days'))",
+      "params": [
+        "perf-evt-006"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-44 days'))",
+      "params": [
+        "perf-evt-007"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days'))",
+      "params": [
+        "perf-evt-008"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-56 days'))",
+      "params": [
+        "perf-evt-009"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-62 days'))",
+      "params": [
+        "perf-evt-010"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-68 days'))",
+      "params": [
+        "perf-evt-011"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_piggy_bank__processed_events (event_id, processed_at) VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-74 days'))",
+      "params": [
+        "perf-evt-012"
+      ]
+    }
+  ]
+}

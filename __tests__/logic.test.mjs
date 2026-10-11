@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal } from "../src/logic.js";
+import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal, managesBanks, hasNoChildren, serialByKey, pendingTotal, withPending } from "../src/logic.js";
 
 // ── fmtMoney ──────────────────────────────────────────────────────────────────
 
@@ -96,5 +96,106 @@ describe("savings goals", () => {
   it("calculates remaining balance without going negative", () => {
     expect(remainingForGoal({ target: 1000 }, { balance: 250 })).toBe(750);
     expect(remainingForGoal({ target: 1000 }, { balance: 1200 })).toBe(0);
+  });
+});
+
+describe("managesBanks", () => {
+  const adult = { id: "a1", role: "adult" };
+  const child = { id: "c1", role: "child" };
+
+  it("any adult manages in a household, which is the default", () => {
+    expect(managesBanks(adult)).toBe(true);
+    expect(managesBanks(child)).toBe(false);
+    expect(managesBanks(null)).toBe(false);
+  });
+
+  it("only the steward manages in a shared space", () => {
+    expect(managesBanks(adult, { tenantKind: "shared_space", isAdmin: false })).toBe(false);
+    expect(managesBanks(adult, { tenantKind: "shared_space", isAdmin: true })).toBe(true);
+  });
+
+  it("being a household's admin does not make a child a manager", () => {
+    expect(managesBanks(child, { tenantKind: "household", isAdmin: true })).toBe(false);
+  });
+});
+
+describe("hasNoChildren", () => {
+  it("is true for a loaded list of adults only", () => {
+    expect(hasNoChildren([{ id: "a1", role: "adult" }, { id: "a2", role: "admin" }])).toBe(true);
+  });
+
+  it("is false once any member is not an adult", () => {
+    expect(hasNoChildren([{ id: "a1", role: "adult" }, { id: "c1", role: "child" }])).toBe(false);
+  });
+
+  it("is false for an empty list, which means the members did not load", () => {
+    expect(hasNoChildren([])).toBe(false);
+  });
+});
+
+describe("serialByKey", () => {
+  const gate = () => { let open; const wait = new Promise(resolve => { open = resolve; }); return { wait, open }; };
+
+  it("starts a key's second task only once its first has settled", async () => {
+    const inTurn = serialByKey();
+    const first = gate();
+    const seen = [];
+    const a = inTurn("bank", async () => { seen.push("a starts"); await first.wait; seen.push("a ends"); });
+    const b = inTurn("bank", async () => { seen.push("b starts"); });
+    await Promise.resolve();
+    expect(seen).toEqual(["a starts"]);
+    first.open();
+    await Promise.all([a, b]);
+    expect(seen).toEqual(["a starts", "a ends", "b starts"]);
+  });
+
+  it("does not make one key wait for another", async () => {
+    const inTurn = serialByKey();
+    const first = gate();
+    const seen = [];
+    const a = inTurn("one", async () => { await first.wait; seen.push("one"); });
+    await inTurn("two", async () => { seen.push("two"); });
+    expect(seen).toEqual(["two"]);
+    first.open();
+    await a;
+  });
+
+  it("rejects for the task that failed and still runs the next", async () => {
+    const inTurn = serialByKey();
+    const a = inTurn("bank", async () => { throw new Error("refused"); });
+    const b = inTurn("bank", async () => "done");
+    await expect(a).rejects.toThrow("refused");
+    await expect(b).resolves.toBe("done");
+  });
+});
+
+describe("pendingTotal", () => {
+  it("sums the amounts still waiting, withdrawals included", () => {
+    const waiting = new Map([["t1", { id: "t1", amount: 20 }], ["t2", { id: "t2", amount: -5 }]]);
+    expect(pendingTotal(waiting)).toBe(15);
+  });
+
+  it("adds nothing when nothing is waiting", () => {
+    expect(pendingTotal(new Map())).toBe(0);
+    expect(pendingTotal(undefined)).toBe(0);
+  });
+});
+
+describe("withPending", () => {
+  const ledger = [{ id: "l2" }, { id: "l1" }];
+
+  it("keeps waiting rows at the top, newest first", () => {
+    const waiting = new Map([["t1", { id: "t1" }], ["t2", { id: "t2" }]]);
+    expect(withPending(ledger, waiting, 10).map(row => row.id)).toEqual(["t2", "t1", "l2", "l1"]);
+  });
+
+  it("does not show a waiting row the ledger already returned", () => {
+    const waiting = new Map([["l2", { id: "l2" }]]);
+    expect(withPending(ledger, waiting, 10).map(row => row.id)).toEqual(["l2", "l1"]);
+  });
+
+  it("cuts to the limit and takes no pending map as none", () => {
+    expect(withPending(ledger, new Map([["t1", { id: "t1" }]]), 2).map(row => row.id)).toEqual(["t1", "l2"]);
+    expect(withPending(ledger, undefined, 10)).toEqual(ledger);
   });
 });

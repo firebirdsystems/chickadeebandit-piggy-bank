@@ -21,7 +21,7 @@
       --gold: var(--hub-tint-warning-fg, #d97706);  --gold-light: var(--hub-tint-warning, #fef3c7);
       --blue: var(--hub-tint-info-fg, #2563eb);  --blue-light: var(--hub-tint-info, #dbeafe);
       --green: var(--hub-tint-success-fg, #16a34a); --green-light: var(--hub-tint-success, #dcfce7);
-      --red: #dc2626; --red-ink: var(--hub-tint-danger-fg, #dc2626);   --red-light: #fee2e2;
+      --red: #dc2626; --red-ink: var(--hub-tint-danger-fg, #dc2626);   --red-light: var(--hub-tint-danger, #fee2e2);
       --radius:       var(--hub-radius, 0.5rem);
       --shadow:       0 1px 3px rgba(0,0,0,.07);
     }
@@ -155,6 +155,8 @@
     .type-opt .type-label { font-size: 0.82rem; font-weight: 600; }
 
     .empty { text-align: center; padding: 36px 16px; color: var(--muted); font-size: 0.9rem; }
+    .app-error { margin: 12px 0; padding: 10px 14px; border-radius: 10px; background: var(--red-light); color: var(--red-ink); font-size: 0.88rem; }
+    .scope-note { margin: 14px 0 0; text-align: center; color: var(--muted); font-size: 0.85rem; }
     .loading { text-align: center; padding: 40px; color: var(--muted); }
     .automation-notice { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; background: var(--accent-light); color: var(--text); }
     .automation-notice a { color: var(--accent); font-weight: 600; }
@@ -169,12 +171,16 @@
 
 <script type="module">
 import { memberColor, initial, esc, isAdult, hubConfirm, automationStatus, glyph } from "/hub-sdk.js";
-import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal } from "./logic.js";
+import { fmtMoney, fmtTime, fmtBalance, fmtAmount, fmtDate, goalProgress, remainingForGoal, managesBanks, hasNoChildren, serialByKey, pendingTotal, withPending } from "./logic.js";
 
 const CONTEXT    = window.__CONTEXT_URL ?? "";
 const DB         = window.__DB_URL      ?? "";
 const ME         = window.__CURRENT_MEMBER ?? null;
 const HUB_ORIGIN = window.__HUB_ORIGIN ?? "";
+// Managing other members' banks: any adult in a household, and only the
+// steward in a shared space. The hub decides; this only keeps the page from
+// offering an overview that would be empty and buttons it would refuse.
+const MANAGES = managesBanks(ME, { tenantKind: window.__TENANT_KIND ?? "household", isAdmin: window.__IS_ADMIN === true });
 
 let members          = [];
 let banks            = [];       // piggy banks relevant to current user
@@ -186,12 +192,17 @@ let viewMemberId     = null;     // admin: which member detail is open
 // publisher. Only an admin can switch them off; when one is, admins are told
 // here rather than left wondering why deposits stopped.
 let allowanceOff     = [];       // titles of allowance automations switched off
+let errorMsg         = "";       // the last refusal or failure, shown under the header
 
 // ─── DB ───────────────────────────────────────────────────────────────────
 async function db(sql, params = []) {
   if (!DB) return { rows: [] };
   const res = await fetch(DB, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sql, params }) });
-  return res.json();
+  const json = await res.json().catch(() => ({}));
+  // A refusal is an answer too: without this a write the hub turned down read
+  // as a success, and the click that asked for it appeared to do nothing.
+  if (!res.ok || json.error) throw new Error(json.error || "That could not be saved");
+  return json;
 }
 
 async function initDb() {
@@ -214,32 +225,46 @@ async function loadMembers() {
 
 async function loadBanks() {
   if (!ME) return;
-  if (isAdult(ME)) {
-    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks ORDER BY member_id, type`);
-    banks = rows ?? [];
-  } else {
-    const { rows } = await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? ORDER BY type`, [ME.id]);
-    banks = rows ?? [];
+  // Every bank a transaction is being written to at any moment of this read.
+  // The reads below are separate requests, so such a write can land between
+  // them, or after them and before its own answer: what they add up to for
+  // that bank is not to be trusted, and it is read again below.
+  const written = new Set(writing.keys());
+  reloads.add(written);
+  let loaded, tailRows, rollupRows;
+  try {
+    ({ rows: loaded } = MANAGES
+      ? await db(`SELECT * FROM app_piggy_bank__piggy_banks ORDER BY member_id, type`)
+      : await db(`SELECT * FROM app_piggy_bank__piggy_banks WHERE member_id = ? ORDER BY type`, [ME.id]));
+    // Balance is DERIVED: retention rollup + SUM of the live transaction tail,
+    // both aggregated in SQL. The stored piggy_banks.balance column (migrations
+    // ≤004) is no longer read or written — it could silently diverge from the
+    // ledger when the old insert+update pair failed in between, and it blocked
+    // retention on transactions (expiring rows would not have moved it, but
+    // nothing reconciled it either). The hub retention runner folds expiring
+    // transactions into bank_rollups inside the same transaction as their
+    // delete, so this derivation is stable across expiry.
+    ({ rows: tailRows } = await db(`SELECT bank_id, COALESCE(SUM(amount), 0) AS tail FROM app_piggy_bank__transactions GROUP BY bank_id`));
+    ({ rows: rollupRows } = await db(`SELECT bank_id, amount FROM app_piggy_bank__bank_rollups`));
+  } finally {
+    reloads.delete(written);
   }
-  // Balance is DERIVED: retention rollup + SUM of the live transaction tail,
-  // both aggregated in SQL. The stored piggy_banks.balance column (migrations
-  // ≤004) is no longer read or written — it could silently diverge from the
-  // ledger when the old insert+update pair failed in between, and it blocked
-  // retention on transactions (expiring rows would not have moved it, but
-  // nothing reconciled it either). The hub retention runner folds expiring
-  // transactions into bank_rollups inside the same transaction as their
-  // delete, so this derivation is stable across expiry.
-  const tails = new Map();
-  const { rows: tailRows } = await db(`SELECT bank_id, COALESCE(SUM(amount), 0) AS tail FROM app_piggy_bank__transactions GROUP BY bank_id`);
-  for (const row of tailRows ?? []) tails.set(row.bank_id, Number(row.tail ?? 0));
-  const { rows: rollupRows } = await db(`SELECT bank_id, amount FROM app_piggy_bank__bank_rollups`);
+  banks = loaded ?? [];
+  const tails = new Map((tailRows ?? []).map(row => [row.bank_id, Number(row.tail ?? 0)]));
   const rollups = new Map((rollupRows ?? []).map(r => [r.bank_id, Number(r.amount ?? 0)]));
-  for (const bank of banks) bank.balance = (rollups.get(bank.id) ?? 0) + (tails.get(bank.id) ?? 0);
+  // Plus what this page has drawn and not yet heard back about (see
+  // recordTransaction): the ledger cannot hold those yet.
+  for (const bank of banks) bank.balance = (rollups.get(bank.id) ?? 0) + (tails.get(bank.id) ?? 0) + pendingTotal(unsettled[bank.id]);
+  // A bank written to meanwhile has its balance read again in its own turn,
+  // when no write of this page's is on its way to it.
+  await Promise.all([...written]
+    .filter(bankId => banks.some(b => b.id === bankId))
+    .map(bankId => inTurn(bankId, () => loadBalanceForBank(bankId))));
 }
 
 async function loadGoals() {
   if (!ME) return;
-  if (isAdult(ME)) {
+  if (MANAGES) {
     const { rows } = await db(`SELECT * FROM app_piggy_bank__savings_goals WHERE status = 'active' ORDER BY created_at`);
     goals = rows ?? [];
   } else {
@@ -251,8 +276,10 @@ async function loadGoals() {
 const RECENT_TX_SQL = "SELECT * FROM app_piggy_bank__transactions WHERE bank_id = ? ORDER BY created_at DESC LIMIT 10";
 
 async function loadTransactionsForBank(bankId) {
-  const { rows } = await db(RECENT_TX_SQL, [bankId]);
-  transactions[bankId] = rows ?? null;
+  // null is "could not read", which the card says (see loadAllTransactions).
+  // Rows this page has drawn and not yet heard back about stay at the top.
+  const { rows } = await db(RECENT_TX_SQL, [bankId]).catch(() => ({ rows: null }));
+  transactions[bankId] = rows ? withPending(rows, unsettled[bankId], 10) : null;
 }
 
 // Every bank's recent rows in ONE request (a batch; the hub takes at most 25
@@ -284,7 +311,7 @@ function mc(id) { return memberColor(id, members); }
 
 // ─── Admin actions ────────────────────────────────────────────────────────
 async function createBank(memberId, type) {
-  if (!isAdult(ME)) return;
+  if (!MANAGES) return;
   const name = type === "money" ? "Money" : "Screen Time";
   const id   = crypto.randomUUID();
   const now  = new Date().toISOString();
@@ -295,27 +322,45 @@ async function createBank(memberId, type) {
 }
 
 async function deleteBank(bankId) {
-  if (!isAdult(ME)) return;
+  if (!MANAGES) return;
   if (!await hubConfirm({ message: "Delete this bank?", description: "All transaction history will be permanently removed.", confirmLabel: "Delete bank", destructive: true })) return;
   // One statement: manifest delete_cascades removes the bank's transactions in
   // the same transactional batch. Two separate calls could leave a bank whose
   // ledger had already been deleted but whose balance row survived.
-  await db(`DELETE FROM app_piggy_bank__piggy_banks WHERE id = ?`, [bankId]);
-  delete transactions[bankId];
+  const { changed } = await db(`DELETE FROM app_piggy_bank__piggy_banks WHERE id = ?`, [bankId]);
+  // Either way the list is read again: a bank somebody else has already
+  // deleted leaves the page as well as being reported.
   await loadBanks();
+  if (changed === 0) throw new Error("This bank could not be deleted.");
+  delete transactions[bankId];
   render();
 }
+
+// Transactions this page has drawn ahead of the hub's answer, by bank: id →
+// the row as drawn. A balance or a history read while one is waiting adds
+// these back, because the ledger cannot hold them yet.
+const unsettled = {};
+// Banks with a write on its way to the hub right now (bank id → how many; one
+// at most, as writes take turns), and the sets of the loadBanks calls in
+// progress, each of which is told about every bank written to while it reads.
+const writing = new Map();
+const reloads = new Set();
+// One write at a time for each bank. With that, a transaction still in
+// `unsettled` has not been sent, so a ledger read never counts it twice.
+const inTurn = serialByKey();
 
 async function recordTransaction(bankId, amount, note, source = "manual") {
   const bank = banks.find(b => b.id === bankId);
   if (!bank || !ME) return;
-  if (!isAdult(ME)) return;  // balances are adult-controlled (enforced server-side too)
+  if (!MANAGES) return;  // balances are set by whoever manages the banks (enforced server-side too)
   const id  = crypto.randomUUID();
   const now = new Date().toISOString();
+  const memberId = bank.member_id;
 
   // Optimistic update: reflect balance change and close modal immediately
   bank.balance += amount;
-  const optimisticTx = { id, bank_id: bankId, member_id: bank.member_id, actor_id: ME.id, amount, note, source, created_at: now };
+  const optimisticTx = { id, bank_id: bankId, member_id: memberId, actor_id: ME.id, amount, note, source, created_at: now };
+  (unsettled[bankId] ??= new Map()).set(id, optimisticTx);
   transactions[bankId] = [optimisticTx, ...(transactions[bankId] ?? [])].slice(0, 10);
   closeModal();
   render();
@@ -323,14 +368,70 @@ async function recordTransaction(bankId, amount, note, source = "manual") {
   // Persist to DB, then sync tx list to match server order/content
   // One INSERT — the balance is derived from the ledger (see loadBanks), so
   // there is no second statement to fail separately and diverge.
-  await db(`INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, bankId, bank.member_id, ME.id, amount, note, source, now]);
-  await loadTransactionsForBank(bankId);
-  render();
+  await inTurn(bankId, async () => {
+    writing.set(bankId, (writing.get(bankId) ?? 0) + 1);
+    for (const written of reloads) written.add(bankId);
+    try {
+      await db(`INSERT INTO app_piggy_bank__transactions (id, bank_id, member_id, actor_id, amount, note, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, bankId, memberId, ME.id, amount, note, source, now]);
+    } catch (e) {
+      // A failed request does not say the INSERT failed: the hub may have
+      // committed it and the answer been lost on the way back. So the ledger is
+      // asked, by the id this transaction was given, before anything is reported
+      // — and the balance and the list are both read again from it rather than
+      // worked back from what was drawn ahead of the answer.
+      const outcome = await transactionOutcome(id);
+      unsettled[bankId].delete(id);
+      const [read] = await Promise.all([loadBalanceForBank(bankId), loadTransactionsForBank(bankId)]);
+      // The ledger could not be read, but it did say this one is not in it.
+      if (!read && outcome === "missing") {
+        const live = banks.find(b => b.id === bankId);
+        if (live) live.balance -= amount;
+      }
+      if (outcome === "recorded") { render(); return; }
+      if (outcome === "unknown") {
+        // Neither answer came back. Recording it again now could enter it twice.
+        throw new Error("This could not be confirmed. Check the history before recording it again.");
+      }
+      throw e;
+    }
+    unsettled[bankId].delete(id);
+    await loadTransactionsForBank(bankId);
+    render();
+  }).finally(() => stopWriting(bankId));
+}
+
+function stopWriting(bankId) {
+  const left = (writing.get(bankId) ?? 1) - 1;
+  if (left > 0) writing.set(bankId, left); else writing.delete(bankId);
+}
+
+// Whether a transaction the page sent is in the ledger: "recorded", "missing",
+// or "unknown" when that read failed too.
+async function transactionOutcome(id) {
+  try {
+    const { rows } = await db(`SELECT id FROM app_piggy_bank__transactions WHERE id = ?`, [id]);
+    return (rows ?? []).length ? "recorded" : "missing";
+  } catch { return "unknown"; }
+}
+
+// One bank's balance, derived the way loadBanks derives every bank's. Left as
+// it stands when the ledger cannot be read, and the answer says which.
+async function loadBalanceForBank(bankId) {
+  try {
+    const [tail, rollup] = await Promise.all([
+      db(`SELECT COALESCE(SUM(amount), 0) AS tail FROM app_piggy_bank__transactions WHERE bank_id = ?`, [bankId]),
+      db(`SELECT amount FROM app_piggy_bank__bank_rollups WHERE bank_id = ?`, [bankId]),
+    ]);
+    // Looked up now, not before the reads: loadBanks replaces the bank objects.
+    const bank = banks.find(b => b.id === bankId);
+    if (bank) bank.balance = Number(rollup.rows?.[0]?.amount ?? 0) + Number(tail.rows?.[0]?.tail ?? 0) + pendingTotal(unsettled[bankId]);
+    return true;
+  } catch { return false; }
 }
 
 async function createGoal(memberId, bankType, title, target) {
-  if (!isAdult(ME) || !title || target <= 0) return;
+  if (!MANAGES || !title || target <= 0) return;
   await db(
     `INSERT INTO app_piggy_bank__savings_goals (id, member_id, bank_type, title, target, status, created_at)
      VALUES (?, ?, ?, ?, ?, 'active', ?)`,
@@ -342,11 +443,12 @@ async function createGoal(memberId, bankType, title, target) {
 }
 
 async function archiveGoal(goalId) {
-  if (!isAdult(ME)) return;
-  await db(
+  if (!MANAGES) return;
+  const { changed } = await db(
     `UPDATE app_piggy_bank__savings_goals SET status = 'archived' WHERE id = ?`,
     [goalId]
   );
+  if (changed === 0) throw new Error("This goal could not be archived.");
   goals = goals.filter(g => g.id !== goalId);
   render();
 }
@@ -365,6 +467,26 @@ function openModal(html) {
   modalEl.querySelector("[data-autofocus]")?.focus();
 }
 function closeModal() { modalEl?.remove(); modalEl = null; }
+
+// A failure closes whatever dialog raised it and is shown under the header,
+// so it is still on screen once the dialog is gone.
+function showError(e) {
+  errorMsg = e?.message || "Something went wrong. Please try again.";
+  closeModal();
+  render();
+}
+// Runs one action, clearing the last failure first and reporting a new one.
+// `key` names the action: while one is on its way a second click on the same
+// button does nothing, so a double click cannot open two banks or save a goal
+// twice. A null key is never held back: recording a transaction closes its
+// dialog at once, so the next one on the same bank is a new request.
+const inFlight = new Set();
+function attempt(key, action) {
+  if (key !== null && inFlight.has(key)) return Promise.resolve();
+  if (key !== null) inFlight.add(key);
+  if (errorMsg) { errorMsg = ""; render(); }
+  return Promise.resolve().then(action).catch(showError).finally(() => inFlight.delete(key));
+}
 
 function openTransactionModal(bank, isDeposit) {
   const member  = members.find(m => m.id === bank.member_id);
@@ -429,7 +551,7 @@ window.submitTx = function(bankId, type, isDeposit) {
     ? Math.round(rawVal * 100) * (isDeposit ? 1 : -1)
     : Math.round(rawVal) * (isDeposit ? 1 : -1);
   const note = document.getElementById("tx-note").value.trim();
-  recordTransaction(bankId, amount, note);
+  attempt(null, () => recordTransaction(bankId, amount, note));
 };
 
 window.submitGoal = function(bankId) {
@@ -440,7 +562,7 @@ window.submitGoal = function(bankId) {
   if (!title) { document.getElementById("goal-title").focus(); return; }
   if (!rawTarget || rawTarget <= 0) { document.getElementById("goal-target").focus(); return; }
   const target = bank.type === "money" ? Math.round(rawTarget * 100) : Math.round(rawTarget);
-  createGoal(bank.member_id, bank.type, title, target);
+  attempt(`goal:${bankId}`, () => createGoal(bank.member_id, bank.type, title, target));
 };
 
 window.closeModal = closeModal;
@@ -515,7 +637,7 @@ function renderMemberDetail(memberId) {
   const myBanks   = banks.filter(b => b.member_id === memberId);
   const moneyBank = myBanks.find(b => b.type === "money");
   const timeBank  = myBanks.find(b => b.type === "screen_time");
-  const canManage = isAdult(ME);
+  const canManage = MANAGES;
   const col       = mc(memberId);
 
   const bankCards = [
@@ -527,14 +649,17 @@ function renderMemberDetail(memberId) {
 
   return `
     <div class="back-bar">
-      ${isAdult(ME) ? `<button class="btn btn-ghost btn-sm" onclick="goBack()" data-testid="back-to-family">← Back</button>` : ""}
+      ${MANAGES ? `<button class="btn btn-ghost btn-sm" onclick="goBack()" data-testid="back-to-family">← Back</button>` : ""}
       <h2>
         <span class="avatar-sm" style="background:${col}">${initial(member?.name ?? "?")}</span>
         ${esc(member?.name ?? "?")}
       </h2>
     </div>
-    ${bankCards || `<div class="empty">No banks yet.</div>`}`;
+    ${bankCards || `<div class="empty">No banks yet.</div>`}
+    ${isAdult(ME) && !MANAGES ? `<p class="scope-note">Piggy Bank keeps savings and screen time for child members. In a shared space, the steward opens and manages their banks.</p>` : ""}`;
 }
+
+const NO_CHILDREN_NOTE = "Piggy Bank keeps savings and screen time for child members, and there are none here yet. Add a child member to open a bank for them.";
 
 function renderAdminOverview() {
   const kids = members.filter(m => !isAdult(m));
@@ -542,7 +667,7 @@ function renderAdminOverview() {
   const showMembers = [...kids, ...adults];
 
   if (showMembers.length === 0) {
-    return `<div class="empty">No family members found. Add members in the hub to get started.</div>`;
+    return `<div class="empty">${hasNoChildren(members) ? NO_CHILDREN_NOTE : "No family members found. Add members in the hub to get started."}</div>`;
   }
 
   const cards = showMembers.map(m => {
@@ -571,7 +696,6 @@ function renderAdminOverview() {
 function render() {
   if (!ME) { document.getElementById("root").innerHTML = `<div class="empty">Please log in.</div>`; return; }
 
-  const meIsAdult = isAdult(ME);
   const notice = allowanceOff.length > 0
     ? `<div class="automation-notice" role="status">Chores allowance is not being deposited: ${esc(allowanceOff.join(" and "))} ${allowanceOff.length > 1 ? "are" : "is"} switched off.
         ${HUB_ORIGIN ? `<a href="${esc(HUB_ORIGIN)}/settings/automations" target="_top">Turn back on in Settings → Automations</a>` : "An admin can turn it back on in Settings → Automations."}</div>`
@@ -582,12 +706,13 @@ function render() {
       <div><h1>${glyph("piggy")} Piggy Bank</h1><div class="sub">Savings &amp; screen time</div></div>
     </header>
     ${notice}
+    ${errorMsg ? `<div class="app-error" role="alert">${esc(errorMsg)}</div>` : ""}
     <div id="main-content"></div>`;
 
   const main = document.getElementById("main-content");
-  if (meIsAdult && viewMemberId) {
+  if (MANAGES && viewMemberId) {
     main.innerHTML = renderMemberDetail(viewMemberId);
-  } else if (meIsAdult) {
+  } else if (MANAGES) {
     main.innerHTML = renderAdminOverview();
   } else {
     main.innerHTML = renderMemberDetail(ME.id);
@@ -598,9 +723,9 @@ window.viewMember  = id => { viewMemberId = id; render(); };
 window.goBack      = ()  => { viewMemberId = null; render(); };
 window.openTx      = (bankId, isDeposit) => { const bank = banks.find(b => b.id === bankId); if (bank) openTransactionModal(bank, isDeposit); };
 window.openGoal    = bankId => { const bank = banks.find(b => b.id === bankId); if (bank) openGoalModal(bank); };
-window.archiveGoal = archiveGoal;
-window.deleteBank  = deleteBank;
-window.createBank  = async (memberId, type) => { await createBank(memberId, type); };
+window.archiveGoal = goalId => attempt(`archive:${goalId}`, () => archiveGoal(goalId));
+window.deleteBank  = bankId => attempt(`delete:${bankId}`, () => deleteBank(bankId));
+window.createBank  = (memberId, type) => attempt(`bank:${memberId}:${type}`, () => createBank(memberId, type));
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 (async () => {
@@ -616,10 +741,12 @@ window.createBank  = async (memberId, type) => { await createBank(memberId, type
   }
   await loadMembers();
   if (DB) {
-    await initDb();
-    await loadBanks();
-    await loadGoals();
-    await loadAllTransactions();
+    try {
+      await initDb();
+      await loadBanks();
+      await loadGoals();
+      await loadAllTransactions();
+    } catch { errorMsg = "Banks could not be loaded. Reload to try again."; }
   }
   rendered = true;
   render();

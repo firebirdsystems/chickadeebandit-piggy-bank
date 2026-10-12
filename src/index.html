@@ -339,7 +339,7 @@ async function deleteBank(bankId) {
   // Either way the list is read again: a bank somebody else has already
   // deleted leaves the page as well as being reported.
   await loadBanks();
-  if (changed === 0) throw new Error("This bank could not be deleted.");
+  if (changed === 0) throw userError("This bank could not be deleted.");
   delete transactions[bankId];
   render();
 }
@@ -399,7 +399,7 @@ async function recordTransaction(bankId, amount, note, source = "manual") {
       if (outcome === "recorded") { render(); return; }
       if (outcome === "unknown") {
         // Neither answer came back. Recording it again now could enter it twice.
-        throw new Error("This could not be confirmed. Check the history before recording it again.");
+        throw userError("This could not be confirmed. Check the history before recording it again.");
       }
       throw e;
     }
@@ -456,7 +456,7 @@ async function archiveGoal(goalId) {
     `UPDATE app_piggy_bank__savings_goals SET status = 'archived' WHERE id = ?`,
     [goalId]
   );
-  if (changed === 0) throw new Error("This goal could not be archived.");
+  if (changed === 0) throw userError("This goal could not be archived.");
   goals = goals.filter(g => g.id !== goalId);
   render();
 }
@@ -476,10 +476,13 @@ function openModal(html) {
 }
 function closeModal() { modalEl?.remove(); modalEl = null; }
 
+function userError(msg) { return Object.assign(new Error(msg), { forUser: true }); }
 // A failure closes whatever dialog raised it and is shown under the header,
 // so it is still on screen once the dialog is gone.
 function showError(e) {
-  errorMsg = e?.message || "Something went wrong. Please try again.";
+  console.error(e);
+  // Only wording this app wrote for the reader is shown as is.
+  errorMsg = e?.forUser ? e.message : "Couldn’t save — try again.";
   closeModal();
   render();
 }

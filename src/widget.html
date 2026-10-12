@@ -64,6 +64,7 @@
       align-items: center; justify-content: center;
       color: #9ca3af; font-size: 12px; gap: 6px;
     }
+    .load-error { margin: 8px; padding: 8px 10px; border-radius: 10px; background: var(--hub-tint-danger, #fee2e2); color: var(--hub-tint-danger-fg, #b91c1c); font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -113,12 +114,14 @@ function initial(name) {
 
 async function loadMembers() {
   if (!CONTEXT) return {};
-  try {
-    const res = await fetch(`${CONTEXT}?keys=family.members`);
-    const data = await res.json();
-    const list = data["family.members"] ?? [];
-    return Object.fromEntries(list.map(m => [m.id, m]));
-  } catch { return {}; }
+  // A failed read throws: it is a failed load, never banks owned by "Member".
+  const res = await fetch(`${CONTEXT}?keys=family.members`);
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data || typeof data !== "object" || data.error) throw new Error("Couldn’t reach the hub. Try again.");
+  // The hub answers 200 and names a key it could not resolve in $errors: that read failed too.
+  if (Array.isArray(data.$errors) && data.$errors.includes("family.members")) throw new Error("Couldn’t reach the hub. Try again.");
+  const list = data["family.members"] ?? [];
+  return Object.fromEntries(list.map(m => [m.id, m]));
 }
 
 async function load() {
@@ -183,7 +186,8 @@ async function load() {
 }
 
 load().catch(() => {
-  document.body.innerHTML = `<div class="empty"><a href="/open/${APP_ID}" style="color:#111827;font-weight:600">Open Piggy Bank →</a></div>`;
+  // A failed read is not "No banks created yet": say so, and keep the way in.
+  document.body.innerHTML = `<div class="load-error" data-testid="load-error" role="alert">Couldn’t load the piggy banks.</div><div class="empty"><a href="/open/${APP_ID}" style="color:#111827;font-weight:600">Open Piggy Bank →</a></div>`;
 });
 </script>
 </body>

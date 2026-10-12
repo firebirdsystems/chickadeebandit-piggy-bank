@@ -50,6 +50,221 @@
         { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"goal-archive\"]", "count": 1 },
         { "action": "expectCount", "as": "parent", "selector": "[data-testid=\"add-goal\"]", "count": 1 }
       ]
+    },
+    {
+      "name": "in a shared space a participant sees only their own bank with no manage buttons; the steward gets the overview, the buttons and, with no banks, the no-children note",
+      "context": "shared_space",
+      "members": {
+        "steward": "admin",
+        "pat": "adult",
+        "sam": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_piggy_bank__piggy_banks (id, member_id, name, type, created_at) VALUES ('sp-bank-pat', ?, ?, 'money', ?), ('sp-bank-sam', ?, ?, 'money', ?)",
+          "params": [
+            "{{pat}}",
+            "Money",
+            "2026-01-05T00:00:00Z",
+            "{{sam}}",
+            "Money",
+            "2026-01-05T00:00:00Z"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "pat"
+        },
+        {
+          "action": "expectVisible",
+          "as": "pat",
+          "selector": "[data-testid=\"main-content\"]"
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"member-card\"]",
+          "count": 0
+        },
+        {
+          "action": "expectVisible",
+          "as": "pat",
+          "selector": "[data-testid=\"bank-card\"][data-bank-id=\"sp-bank-pat\"]"
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"bank-card\"]",
+          "count": 1
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"bank-add\"]",
+          "count": 0
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"bank-subtract\"]",
+          "count": 0
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"bank-delete\"]",
+          "count": 0
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"add-goal\"]",
+          "count": 0
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"create-bank\"]",
+          "count": 0
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"back-to-family\"]",
+          "count": 0
+        },
+        {
+          "action": "expectText",
+          "as": "pat",
+          "selector": "[data-testid=\"scope-note\"]",
+          "text": "In a shared space, the steward opens and manages their banks."
+        },
+        {
+          "action": "open",
+          "as": "steward"
+        },
+        {
+          "action": "expectVisible",
+          "as": "steward",
+          "selector": "[data-testid=\"main-content\"]"
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"member-card\"]",
+          "count": 2
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"no-children-note\"]",
+          "count": 0
+        },
+        {
+          "action": "click",
+          "as": "steward",
+          "selector": "[data-testid=\"member-card\"]:first-child"
+        },
+        {
+          "action": "expectVisible",
+          "as": "steward",
+          "selector": "[data-testid=\"back-to-family\"]"
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"bank-card\"]",
+          "count": 1
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"bank-add\"]",
+          "count": 1
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"bank-subtract\"]",
+          "count": 1
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"bank-delete\"]",
+          "count": 1
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"add-goal\"]",
+          "count": 1
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"create-bank\"][data-bank-type=\"screen_time\"]",
+          "count": 1
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"scope-note\"]",
+          "count": 0
+        },
+        {
+          "action": "seedRaw",
+          "sql": "DELETE FROM app_piggy_bank__piggy_banks WHERE id IN ('sp-bank-pat', 'sp-bank-sam')"
+        },
+        {
+          "action": "reload",
+          "as": "steward"
+        },
+        {
+          "action": "expectVisible",
+          "as": "steward",
+          "selector": "[data-testid=\"no-children-note\"]"
+        },
+        {
+          "action": "expectText",
+          "as": "steward",
+          "selector": "[data-testid=\"no-children-note\"]",
+          "text": "Piggy Bank keeps savings and screen time for child members, and there are none here yet. Add a child member to open a bank for them."
+        },
+        {
+          "action": "expectCount",
+          "as": "steward",
+          "selector": "[data-testid=\"member-card\"]",
+          "count": 0
+        },
+        {
+          "action": "reload",
+          "as": "pat"
+        },
+        {
+          "action": "expectVisible",
+          "as": "pat",
+          "selector": "[data-testid=\"banks-empty\"]"
+        },
+        {
+          "action": "expectVisible",
+          "as": "pat",
+          "selector": "[data-testid=\"scope-note\"]"
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"no-children-note\"]",
+          "count": 0
+        },
+        {
+          "action": "expectCount",
+          "as": "pat",
+          "selector": "[data-testid=\"create-bank\"]",
+          "count": 0
+        }
+      ]
     }
   ]
 }

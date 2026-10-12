@@ -161,6 +161,8 @@
     .automation-notice { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; background: var(--accent-light); color: var(--text); }
     .automation-notice a { color: var(--accent); font-weight: 600; }
     .section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+    .load-error { margin: 0 0 12px; padding: 10px 14px; border-radius: 10px; background: var(--hub-tint-danger, #fee2e2); color: var(--hub-tint-danger-fg, #b91c1c); font-size: 0.9rem; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+    .load-error-retry { background: none; border: 1px solid currentColor; border-radius: 8px; padding: 5px 10px; font: inherit; font-weight: 600; color: inherit; cursor: pointer; flex-shrink: 0; }
   </style>
   <base href="/run/piggy-bank/" />
 </head>
@@ -193,15 +195,16 @@ let viewMemberId     = null;     // admin: which member detail is open
 // here rather than left wondering why deposits stopped.
 let allowanceOff     = [];       // titles of allowance automations switched off
 let errorMsg         = "";       // the last refusal or failure, shown under the header
+let loadFailed       = false;    // the first load failed; cleared when a load succeeds
 
 // ─── DB ───────────────────────────────────────────────────────────────────
 async function db(sql, params = []) {
   if (!DB) return { rows: [] };
   const res = await fetch(DB, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sql, params }) });
-  const json = await res.json().catch(() => ({}));
+  const json = await res.json().catch(() => null);
   // A refusal is an answer too: without this a write the hub turned down read
   // as a success, and the click that asked for it appeared to do nothing.
-  if (!res.ok || json.error) throw new Error(json.error || "That could not be saved");
+  if (!res.ok || !json || typeof json !== "object" || json.error) throw new Error(json?.error || "That could not be saved");
   return json;
 }
 
@@ -219,8 +222,13 @@ async function loadMembers() {
     ];
     return;
   }
-  try { const res = await fetch(`${CONTEXT}?keys=family.members`); members = ((await res.json())["family.members"]) ?? []; }
-  catch { members = []; }
+  // A failed read throws: firstLoad shows the load banner, not banks with nobody to own them.
+  const res = await fetch(`${CONTEXT}?keys=family.members`);
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data || typeof data !== "object" || data.error) throw new Error("Couldn’t reach the hub. Try again.");
+  // The hub answers 200 and names a key it could not resolve in $errors: that read failed too.
+  if (Array.isArray(data.$errors) && data.$errors.includes("family.members")) throw new Error("Couldn’t reach the hub. Try again.");
+  members = data["family.members"] ?? [];
 }
 
 async function loadBanks() {
@@ -642,9 +650,9 @@ function renderMemberDetail(memberId) {
 
   const bankCards = [
     moneyBank ? renderBankCard(moneyBank, canManage) : canManage
-      ? `<div class="create-bank-row">No money bank yet.<br/><button class="btn btn-gold btn-sm" data-member-id="${esc(memberId)}" onclick="createBank(this.dataset.memberId,'money')">+ Create Money Bank</button></div>` : "",
+      ? `<div class="create-bank-row">No money bank yet.<br/><button class="btn btn-gold btn-sm" data-member-id="${esc(memberId)}" onclick="createBank(this.dataset.memberId,'money')" data-testid="create-bank" data-bank-type="money">+ Create Money Bank</button></div>` : "",
     timeBank  ? renderBankCard(timeBank,  canManage) : canManage
-      ? `<div class="create-bank-row">No screen time bank yet.<br/><button class="btn btn-blue btn-sm" data-member-id="${esc(memberId)}" onclick="createBank(this.dataset.memberId,'screen_time')">+ Create Screen Time Bank</button></div>` : "",
+      ? `<div class="create-bank-row">No screen time bank yet.<br/><button class="btn btn-blue btn-sm" data-member-id="${esc(memberId)}" onclick="createBank(this.dataset.memberId,'screen_time')" data-testid="create-bank" data-bank-type="screen_time">+ Create Screen Time Bank</button></div>` : "",
   ].filter(Boolean).join("");
 
   return `
@@ -655,8 +663,8 @@ function renderMemberDetail(memberId) {
         ${esc(member?.name ?? "?")}
       </h2>
     </div>
-    ${bankCards || `<div class="empty">No banks yet.</div>`}
-    ${isAdult(ME) && !MANAGES ? `<p class="scope-note">Piggy Bank keeps savings and screen time for child members. In a shared space, the steward opens and manages their banks.</p>` : ""}`;
+    ${bankCards || `<div class="empty" data-testid="banks-empty">No banks yet.</div>`}
+    ${isAdult(ME) && !MANAGES ? `<p class="scope-note" data-testid="scope-note">Piggy Bank keeps savings and screen time for child members. In a shared space, the steward opens and manages their banks.</p>` : ""}`;
 }
 
 const NO_CHILDREN_NOTE = "Piggy Bank keeps savings and screen time for child members, and there are none here yet. Add a child member to open a bank for them.";
@@ -667,7 +675,7 @@ function renderAdminOverview() {
   const showMembers = [...kids, ...adults];
 
   if (showMembers.length === 0) {
-    return `<div class="empty">${hasNoChildren(members) ? NO_CHILDREN_NOTE : "No family members found. Add members in the hub to get started."}</div>`;
+    return `<div class="empty" data-testid="${hasNoChildren(members) ? "no-children-note" : "members-empty"}">${hasNoChildren(members) ? NO_CHILDREN_NOTE : "No family members found. Add members in the hub to get started."}</div>`;
   }
 
   const cards = showMembers.map(m => {
@@ -706,9 +714,12 @@ function render() {
       <div><h1>${glyph("piggy")} Piggy Bank</h1><div class="sub">Savings &amp; screen time</div></div>
     </header>
     ${notice}
+    ${loadFailed ? `<div class="load-error" data-testid="load-error" role="alert"><span>Couldn’t load the banks.</span> <button type="button" class="load-error-retry" data-testid="load-retry">Try again</button></div>` : ""}
     ${errorMsg ? `<div class="app-error" role="alert">${esc(errorMsg)}</div>` : ""}
-    <div id="main-content"></div>`;
+    <div id="main-content" data-testid="main-content"></div>`;
 
+  // Nothing was read, so no banks are drawn and none can be opened over them.
+  if (loadFailed) return;
   const main = document.getElementById("main-content");
   if (MANAGES && viewMemberId) {
     main.innerHTML = renderMemberDetail(viewMemberId);
@@ -728,29 +739,37 @@ window.deleteBank  = bankId => attempt(`delete:${bankId}`, () => deleteBank(bank
 window.createBank  = (memberId, type) => attempt(`bank:${memberId}:${type}`, () => createBank(memberId, type));
 
 // ─── Init ─────────────────────────────────────────────────────────────────
+let rendered = false;
 (async () => {
   // Admins only: the hub answers nobody else, and only admins can turn it back
   // on. Asked for up front, alongside everything else — it waits on nothing
   // here — and drawn whenever it lands.
-  let rendered = false;
   if (window.__IS_ADMIN) {
     automationStatus().then((list) => {
       allowanceOff = (list ?? []).filter((a) => a.automatic && a.state === "off").map((a) => a.title);
       if (allowanceOff.length > 0 && rendered) render();
     }).catch(() => {});
   }
-  await loadMembers();
-  if (DB) {
-    try {
+  await firstLoad();
+})();
+
+async function firstLoad() {
+  try {
+    await loadMembers();
+    if (DB) {
       await initDb();
       await loadBanks();
       await loadGoals();
       await loadAllTransactions();
-    } catch { errorMsg = "Banks could not be loaded. Reload to try again."; }
-  }
+    }
+    loadFailed = false;
+  } catch { loadFailed = true; }
   rendered = true;
   render();
-})();
+}
+document.addEventListener("click", (e) => {
+  if (e.target.closest('[data-testid="load-retry"]')) firstLoad();
+});
 </script>
 </body>
 </html>

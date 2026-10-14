@@ -86,25 +86,27 @@
     "savings_goals": { "kind": "adult_writable", "member_read_column": "member_id" },
     "transactions": {
       "kind": "adult_writable",
-      "member_read_column": "member_id",
-      "retain_days": {
-        "default": 730,
-        "timestamp_column": "created_at",
-        "override_key": "transaction_history",
-        "fold": {
-          "into_table": "bank_rollups",
-          "key_columns": { "bank_id": "bank_id", "member_id": "member_id" },
-          "sum_columns": { "amount": "amount" },
-          "folded_through_column": "folded_through_at"
-        }
-      }
+      "member_read_column": "member_id"
     },
     "bank_rollups": { "kind": "adult_writable", "member_read_column": "member_id" },
     "processed_events": {
-      "kind": "adult_only",
-      "retain_days": { "default": 90, "timestamp_column": "processed_at", "id_column": "event_id", "override_key": "event_dedup",
-        "tier": "operational" }
+      "kind": "adult_only"
     }
+  },
+  "retention": {
+    "transactions": {
+      "default": 730,
+      "timestamp_column": "created_at",
+      "override_key": "transaction_history",
+      "fold": {
+        "into_table": "bank_rollups",
+        "key_columns": { "bank_id": "bank_id", "member_id": "member_id" },
+        "sum_columns": { "amount": "amount" },
+        "folded_through_column": "folded_through_at"
+      }
+    },
+    "processed_events": { "default": 90, "timestamp_column": "processed_at", "id_column": "event_id", "override_key": "event_dedup",
+      "tier": "operational" }
   },
   "automation_actions": {
     "deposit": {
@@ -280,9 +282,6 @@
   "widget": {
     "label": "Piggy Bank",
     "size": "small"
-  },
-  "resource_limits": {
-    "max_db_bytes": 52428800
   },
   "icon": "🐷"
 }

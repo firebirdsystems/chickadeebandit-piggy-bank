@@ -20,7 +20,7 @@ const client = readFileSync(join(__dirname, "../src/index.html"), "utf-8");
 const widget = readFileSync(join(__dirname, "../src/widget.html"), "utf-8");
 
 describe("transactions retention fold", () => {
-  const retain = manifest.row_policies.transactions.retain_days;
+  const retain = manifest.retention.transactions;
 
   it("declares the fold into bank_rollups on both key columns", () => {
     expect(retain).toMatchObject({
